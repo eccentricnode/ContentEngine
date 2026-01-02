@@ -1,7 +1,7 @@
 /**
  * Test LinkedIn Connection
  *
- * Verifies your access token works by calling /userinfo
+ * Verifies your access token works by calling /v2/me
  * Run this BEFORE attempting to post:
  *   bun run test-connection.ts
  */
@@ -16,7 +16,7 @@ if (!ACCESS_TOKEN) {
 
 console.log("\n🔍 Testing LinkedIn Connection...\n");
 
-// Test with /userinfo endpoint
+// Test with /v2/userinfo endpoint (works with openid profile)
 const response = await fetch("https://api.linkedin.com/v2/userinfo", {
   headers: {
     Authorization: `Bearer ${ACCESS_TOKEN}`,
@@ -38,10 +38,9 @@ const userInfo = await response.json();
 
 console.log("✅ Connection successful!\n");
 console.log("User Info:");
-console.log("  Name:", userInfo.name);
-console.log("  Email:", userInfo.email);
 console.log("  Sub (ID):", userInfo.sub);
-console.log("  Picture:", userInfo.picture ? "✓" : "✗");
+console.log("  Name:", userInfo.name);
+console.log("  Email:", userInfo.email || "not provided");
 
 // Save the user sub for posting (this is needed for the author URN)
 const envPath = ".env";

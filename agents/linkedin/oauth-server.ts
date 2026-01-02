@@ -12,7 +12,7 @@ import { $ } from "bun";
 const CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
 const CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
 const REDIRECT_URI = "http://localhost:3000/callback";
-const SCOPES = ["openid", "profile", "email", "w_member_social"].join(" ");
+const SCOPES = ["openid", "profile", "w_member_social"].join(" ");
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error("Missing LINKEDIN_CLIENT_ID or LINKEDIN_CLIENT_SECRET in environment");
@@ -83,6 +83,17 @@ const server = Bun.serve({
       console.log("Access Token:", tokens.access_token?.substring(0, 20) + "...");
       console.log("Expires in:", tokens.expires_in, "seconds");
 
+      // Check for id_token (JWT with user info)
+      let userId = "";
+      if (tokens.id_token) {
+        console.log("ID Token: present");
+        // Decode JWT payload (middle part)
+        const payload = JSON.parse(Buffer.from(tokens.id_token.split('.')[1], 'base64').toString());
+        console.log("User Sub:", payload.sub);
+        console.log("Name:", payload.name);
+        userId = payload.sub;
+      }
+
       // Save to .env
       const envContent = `# LinkedIn OAuth Tokens - Generated ${new Date().toISOString()}
 LINKEDIN_CLIENT_ID=${CLIENT_ID}
@@ -90,6 +101,7 @@ LINKEDIN_CLIENT_SECRET=${CLIENT_SECRET}
 LINKEDIN_ACCESS_TOKEN=${tokens.access_token}
 LINKEDIN_REFRESH_TOKEN=${tokens.refresh_token || ""}
 LINKEDIN_TOKEN_EXPIRES=${Date.now() + (tokens.expires_in * 1000)}
+LINKEDIN_USER_SUB=${userId}
 `;
 
       await Bun.write(".env", envContent);
