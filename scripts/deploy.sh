@@ -5,8 +5,8 @@
 set -e  # Exit on error
 
 SERVER_HOST="192.168.0.5"
-SERVER_USER="ubuntu"
-DEPLOY_PATH="/home/ubuntu/ContentEngine"
+SERVER_USER="ajohn"
+DEPLOY_PATH="/home/ajohn/ContentEngine"
 
 echo "=========================================="
 echo "Content Engine Deployment"
