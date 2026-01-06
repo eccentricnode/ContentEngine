@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Project specific
+*.log
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+!README.md
+
+# Data (will be mounted as volume)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Scripts
+scripts/
+
+# Cloudflare guide
+CLOUDFLARE_TUNNEL.md
+ARCHITECTURE.md
+LOOM_SCRIPT.md

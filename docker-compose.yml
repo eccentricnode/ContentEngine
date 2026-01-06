@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  content-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content-engine
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist SQLite database
+      - ./data:/app/data
+      # Mount .env file for credentials
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Worker service for scheduled posts
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content-engine-worker
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["uv", "run", "python", "-m", "worker"]
+    restart: unless-stopped
+    depends_on:
+      - content-engine
