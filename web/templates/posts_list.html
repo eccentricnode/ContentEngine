@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Posts - Content Engine{% endblock %}
+
+{% block content %}
+<div class="posts-page">
+    <h2>All Posts</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button
+            hx-get="/api/posts"
+            hx-target="#posts-container"
+            hx-swap="innerHTML"
+            class="filter-btn {% if not current_status %}active{% endif %}">
+            All
+        </button>
+        <button
+            hx-get="/api/posts?status=draft"
+            hx-target="#posts-container"
+            hx-swap="innerHTML"
+            class="filter-btn {% if current_status == 'draft' %}active{% endif %}">
+            Drafts
+        </button>
+        <button
+            hx-get="/api/posts?status=scheduled"
+            hx-target="#posts-container"
+            hx-swap="innerHTML"
+            class="filter-btn {% if current_status == 'scheduled' %}active{% endif %}">
+            Scheduled
+        </button>
+        <button
+            hx-get="/api/posts?status=posted"
+            hx-target="#posts-container"
+            hx-swap="innerHTML"
+            class="filter-btn {% if current_status == 'posted' %}active{% endif %}">
+            Posted
+        </button>
+    </div>
+
+    <!-- Posts Container (HTMX will swap content here) -->
+    <div id="posts-container">
+        {% include "components/post_list.html" %}
+    </div>
+</div>
+{% endblock %}

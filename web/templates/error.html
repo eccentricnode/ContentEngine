@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Content Engine{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h2>⚠️ Error</h2>
+    <p class="error-message">{{ message }}</p>
+    <a href="/" class="btn-primary">← Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% if posts %}
+<div class="posts-list">
+    {% for post in posts %}
+    <div class="post-card">
+        <div class="post-header">
+            <span class="badge {{ post.status | status_badge_class }}">{{ post.status.value }}</span>
+            <span class="platform">{{ post.platform.value }}</span>
+            <span class="date">{{ post.created_at | format_datetime }}</span>
+        </div>
+        <div class="post-content">
+            <p>{{ post.content | truncate(200) }}</p>
+        </div>
+        <div class="post-meta">
+            {% if post.scheduled_at %}
+            <span>📅 Scheduled: {{ post.scheduled_at | format_datetime }}</span>
+            {% endif %}
+            {% if post.posted_at %}
+            <span>✅ Posted: {{ post.posted_at | format_datetime }}</span>
+            {% endif %}
+            {% if post.external_id %}
+            <span>🔗 ID: {{ post.external_id }}</span>
+            {% endif %}
+        </div>
+        <div class="post-footer">
+            <div class="post-actions">
+                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">
+                    {% if post.status.value == 'draft' %}
+                    ✅ Approve
+                    {% elif post.status.value == 'scheduled' %}
+                    ⏸️ Cancel Schedule
+                    {% elif post.status.value == 'posted' %}
+                    🔗 View on LinkedIn
+                    {% endif %}
+                </button>
+                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">✏️ Edit</button>
+                <button class="btn-demo danger" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">🗑️ Delete</button>
+            </div>
+            <a href="/posts/{{ post.id }}" class="btn-link">View Full Post →</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No posts found.</p>
+    <p>Create a draft using the CLI:</p>
+    <pre class="code-example">uv run content-engine draft "Your post content here"</pre>
+</div>
+{% endif %}

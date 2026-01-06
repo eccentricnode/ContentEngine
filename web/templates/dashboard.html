@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Content Engine{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Dashboard</h2>
+
+    <!-- Stats Cards with HTMX auto-refresh every 30 seconds -->
+    <div class="stats-grid" hx-get="/api/stats" hx-trigger="every 30s" hx-swap="outerHTML">
+        {% include "components/stats.html" %}
+    </div>
+
+    <!-- Recent Posts -->
+    <section class="recent-posts">
+        <h3>Recent Posts</h3>
+        {% if recent_posts %}
+            <div class="posts-list">
+                {% for post in recent_posts %}
+                <div class="post-card">
+                    <div class="post-header">
+                        <span class="badge {{ post.status | status_badge_class }}">{{ post.status.value }}</span>
+                        <span class="platform">{{ post.platform.value }}</span>
+                        <span class="date">{{ post.created_at | format_datetime }}</span>
+                    </div>
+                    <div class="post-content">
+                        <p>{{ post.content | truncate(150) }}</p>
+                    </div>
+                    <div class="post-footer">
+                        <a href="/posts/{{ post.id }}" class="btn-link">View Details →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No posts yet. Create your first draft using the CLI!</p>
+            <pre class="code-example">uv run content-engine draft "Your post content here"</pre>
+        {% endif %}
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <h3>How to Use</h3>
+        <div class="action-grid">
+            <div class="action-card">
+                <h4>1. Create Draft</h4>
+                <pre>content-engine draft "text"</pre>
+                <p>Create a new draft post</p>
+            </div>
+            <div class="action-card">
+                <h4>2. Review</h4>
+                <pre>content-engine list</pre>
+                <p>View all posts and drafts</p>
+            </div>
+            <div class="action-card">
+                <h4>3. Approve</h4>
+                <pre>content-engine approve &lt;id&gt;</pre>
+                <p>Post to LinkedIn immediately</p>
+            </div>
+            <div class="action-card">
+                <h4>4. Schedule</h4>
+                <pre>content-engine schedule &lt;id&gt; "2024-01-15 09:00"</pre>
+                <p>Schedule for later posting</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

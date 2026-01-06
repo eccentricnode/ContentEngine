@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Post #{{ post.id }} - Content Engine{% endblock %}
+
+{% block content %}
+<div class="post-detail">
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a> / <a href="/posts">Posts</a> / Post #{{ post.id }}
+    </div>
+
+    <div class="post-detail-card">
+        <div class="post-detail-header">
+            <h2>Post #{{ post.id }}</h2>
+            <span class="badge {{ post.status | status_badge_class }} large">{{ post.status.value }}</span>
+        </div>
+
+        <div class="post-detail-meta">
+            <div class="meta-item">
+                <strong>Platform:</strong> {{ post.platform.value }}
+            </div>
+            <div class="meta-item">
+                <strong>Created:</strong> {{ post.created_at | format_datetime("%Y-%m-%d at %H:%M") }}
+            </div>
+            <div class="meta-item">
+                <strong>Updated:</strong> {{ post.updated_at | format_datetime("%Y-%m-%d at %H:%M") }}
+            </div>
+            {% if post.scheduled_at %}
+            <div class="meta-item">
+                <strong>Scheduled:</strong> {{ post.scheduled_at | format_datetime("%Y-%m-%d at %H:%M") }}
+            </div>
+            {% endif %}
+            {% if post.posted_at %}
+            <div class="meta-item">
+                <strong>Posted:</strong> {{ post.posted_at | format_datetime("%Y-%m-%d at %H:%M") }}
+            </div>
+            {% endif %}
+            {% if post.external_id %}
+            <div class="meta-item">
+                <strong>External ID:</strong> <code>{{ post.external_id }}</code>
+            </div>
+            {% endif %}
+            {% if post.error_message %}
+            <div class="meta-item error">
+                <strong>Error:</strong> {{ post.error_message }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="post-detail-content">
+            <h3>Content</h3>
+            <div class="content-box">
+                <p class="content-text">{{ post.content }}</p>
+                <div class="content-stats">
+                    <span>{{ post.content|length }} characters</span>
+                    <span>{{ (post.content.split()|length) }} words</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-detail-actions">
+            <a href="/posts" class="btn-secondary">← Back to Posts</a>
+
+            <div class="demo-actions">
+                {% if post.status.value == 'draft' %}
+                <button class="btn-demo primary" disabled title="👋 This is Austin's demo! Watch the Loom video to see me approve posts in action.">
+                    ✅ Approve & Post
+                </button>
+                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see scheduling in action.">
+                    📅 Schedule
+                </button>
+                {% elif post.status.value == 'scheduled' %}
+                <button class="btn-demo primary" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">
+                    🚀 Post Now
+                </button>
+                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">
+                    ⏸️ Cancel Schedule
+                </button>
+                {% elif post.status.value == 'posted' and post.platform.value == 'linkedin' %}
+                <a href="https://www.linkedin.com/feed/" target="_blank" class="btn-primary">View on LinkedIn →</a>
+                {% endif %}
+                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">✏️ Edit</button>
+                <button class="btn-demo danger" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">🗑️ Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
