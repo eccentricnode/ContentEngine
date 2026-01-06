@@ -16,7 +16,7 @@ load_dotenv()
 class LinkedInConfig(BaseSettings):
     """LinkedIn API configuration."""
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
     client_id: str = Field(..., alias="LINKEDIN_CLIENT_ID")
     client_secret: str = Field(..., alias="LINKEDIN_CLIENT_SECRET")
@@ -28,7 +28,7 @@ class LinkedInConfig(BaseSettings):
 class ServerConfig(BaseSettings):
     """Server configuration."""
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     host: str = Field(default="0.0.0.0", alias="HOST")
     port: int = Field(default=3000, alias="PORT")
