@@ -3,12 +3,32 @@
 .env.local
 .env.*.local
 
-# Dependencies
-node_modules/
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
 
-# Build output
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
 dist/
 build/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
 
 # OS files
 .DS_Store
@@ -22,8 +42,10 @@ Thumbs.db
 
 # Logs
 *.log
-npm-debug.log*
 
 # Temporary files
 tmp/
 temp/
+
+# UV lock file (can be committed or ignored based on preference)
+# uv.lock
