@@ -12,6 +12,7 @@ from sqlalchemy import select, func
 from lib.database import init_db, get_db, Post, PostStatus, Platform
 from lib.ollama import get_ollama_client
 from lib.errors import AIError
+from datetime import datetime, timedelta
 
 
 # Initialize FastAPI app
@@ -28,6 +29,7 @@ templates = Jinja2Templates(directory="web/templates")
 @app.on_event("startup")
 def startup():
     init_db()
+    cleanup_old_posts()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -241,6 +243,20 @@ def add_jinja_filters():
     templates.env.filters["format_datetime"] = format_datetime
     templates.env.filters["status_badge_class"] = status_badge_class
     templates.env.filters["truncate"] = truncate
+
+
+def cleanup_old_posts():
+    """Delete posts older than 5 minutes (for demo purposes)."""
+    db = get_db()
+    cutoff_time = datetime.utcnow() - timedelta(minutes=5)
+
+    deleted_count = db.query(Post).filter(Post.created_at < cutoff_time).delete()
+
+    if deleted_count > 0:
+        db.commit()
+        print(f"🗑️  Cleaned up {deleted_count} posts older than 5 minutes")
+
+    db.close()
 
 
 if __name__ == "__main__":

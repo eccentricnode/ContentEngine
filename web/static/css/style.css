@@ -710,17 +710,17 @@ footer a:hover {
 
 .loading-dots {
     display: inline-block;
-    width: 20px;
+    width: 30px;
     text-align: left;
 }
 
 .loading-dots::after {
     content: '';
-    animation: loading-dots 1.5s steps(4, end) infinite;
+    animation: loading-dots 1.6s infinite;
 }
 
 @keyframes loading-dots {
-    0% { content: ''; }
+    0%, 100% { content: ''; }
     25% { content: '.'; }
     50% { content: '..'; }
     75% { content: '...'; }
