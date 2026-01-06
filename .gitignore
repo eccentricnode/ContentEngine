@@ -49,3 +49,10 @@ temp/
 
 # UV lock file (can be committed or ignored based on preference)
 # uv.lock
+
+# Database files (local development only)
+*.db
+*.sqlite
+*.sqlite3
+content.db
+data/
