@@ -90,22 +90,63 @@ uv run linkedin-oauth
 8. Authorize the app
 9. Save the access token to `.env`
 
-### Usage
+### First-Time Setup
 
-**Post to LinkedIn:**
+After OAuth flow, migrate your token to the database:
 
 ```bash
-# Dry run (test without posting)
-uv run python -m agents.linkedin.post "Your content here" --dry-run
-
-# Actually post
-uv run python -m agents.linkedin.post "Your content here"
+uv run python scripts/migrate_oauth.py
 ```
 
-**Test connection:**
+### Usage
+
+**Content Engine CLI:**
 
 ```bash
+# Create a draft post
+uv run content-engine draft "Your post content here"
+
+# List all posts
+uv run content-engine list
+
+# List only drafts
+uv run content-engine list --status draft
+
+# Show full post details
+uv run content-engine show 1
+
+# Approve and post immediately
+uv run content-engine approve 1
+
+# Dry run (test without posting)
+uv run content-engine approve 1 --dry-run
+
+# Schedule for later
+uv run content-engine schedule 1 "2024-01-15 09:00"
+
+# Reject a draft
+uv run content-engine reject 1
+```
+
+**Background Worker (for scheduled posts):**
+
+```bash
+# Run once to process scheduled posts
+uv run content-worker
+
+# Set up cron job (runs every 15 minutes)
+crontab -e
+# Add: */15 * * * * cd /path/to/ContentEngine && uv run content-worker >> /tmp/content-worker.log 2>&1
+```
+
+**Direct LinkedIn API (for testing):**
+
+```bash
+# Test connection
 uv run python -m agents.linkedin.test_connection
+
+# Post directly (bypasses database)
+uv run python -m agents.linkedin.post "Your content here"
 ```
 
 ## Development
@@ -133,6 +174,7 @@ Deploy to server at `192.168.0.5`:
 ## Roadmap
 
 - [x] Phase 1: LinkedIn OAuth & posting infrastructure
+- [x] Phase 1.5: Database, CLI, and scheduled posting (CURRENT)
 - [ ] Phase 2: Context capture from session history
 - [ ] Phase 3: Semantic blueprint architecture
 - [ ] Phase 4: Brand Planner agent

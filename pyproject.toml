@@ -9,6 +9,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
+    "sqlalchemy>=2.0.0",
+    "click>=8.1.0",
+    "alembic>=1.13.0",
 ]
 
 [project.optional-dependencies]
@@ -27,8 +30,10 @@ ai = [
 ]
 
 [project.scripts]
+content-engine = "cli:cli"
 linkedin-post = "agents.linkedin.post:main"
 linkedin-oauth = "agents.linkedin.oauth_server:main"
+content-worker = "worker:process_scheduled_posts"
 
 [build-system]
 requires = ["hatchling"]
