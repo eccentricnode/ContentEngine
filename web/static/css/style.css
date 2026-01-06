@@ -695,19 +695,23 @@ footer a:hover {
 
 /* Loading Indicator */
 .loading-message {
-    opacity: 0;
-    transition: opacity 0.3s;
+    display: none;
 }
 
 .loading-message.htmx-request {
-    opacity: 1;
+    display: block;
 }
 
 .loading-text {
-    display: inline-flex;
-    align-items: center;
+    display: inline;
     color: var(--secondary);
     font-style: italic;
+}
+
+.loading-dots {
+    display: inline-block;
+    width: 20px;
+    text-align: left;
 }
 
 .loading-dots::after {
@@ -720,7 +724,6 @@ footer a:hover {
     25% { content: '.'; }
     50% { content: '..'; }
     75% { content: '...'; }
-    100% { content: ''; }
 }
 
 /* Responsive */
