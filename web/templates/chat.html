@@ -30,6 +30,7 @@
         hx-post="/chat/message"
         hx-target="#chat-messages"
         hx-swap="beforeend"
+        hx-indicator="#loading-indicator"
         hx-on::after-request="document.getElementById('chat-form').reset(); document.getElementById('message-input').focus();"
     >
         <div class="chat-input-container">
@@ -43,6 +44,16 @@
             <button type="submit" class="btn-primary">Send</button>
         </div>
     </form>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="htmx-indicator loading-message">
+        <div class="message-group ai-group">
+            <div class="ai-avatar">🤖</div>
+            <div class="message-bubble ai-message">
+                <p class="loading-text">Thinking<span class="loading-dots"></span></p>
+            </div>
+        </div>
+    </div>
 
     <div class="chat-tips">
         <p><strong>💡 Tips:</strong> Be specific! Instead of "write about AI", try "I built a content engine using Claude Code and want to explain how AI changes development workflows."</p>
