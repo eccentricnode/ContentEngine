@@ -1,0 +1,31 @@
+<!-- User Message -->
+<div class="message-group user-group">
+    <div class="user-avatar">👤</div>
+    <div class="message-bubble user-message">
+        <p>{{ user_message }}</p>
+    </div>
+</div>
+
+<!-- AI Response -->
+<div class="message-group ai-group">
+    <div class="ai-avatar">🤖</div>
+    <div class="message-bubble ai-message">
+        <div class="ai-content">
+            {{ ai_response | safe }}
+        </div>
+        <div class="message-actions">
+            <button
+                class="btn-demo primary"
+                hx-post="/chat/draft"
+                hx-vals='{"content": "{{ ai_response | replace('"', '\\"') | replace('\n', '\\n') }}"}'
+                hx-target="#draft-status"
+                hx-swap="innerHTML"
+                title="👋 This is Austin's demo! Click to create a draft from this suggestion."
+            >
+                📝 Draft This
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="draft-status"></div>

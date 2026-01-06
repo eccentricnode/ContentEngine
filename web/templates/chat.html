@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - Content Engine{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>💬 AI Content Assistant</h2>
+        <p class="chat-subtitle">Brainstorm LinkedIn post ideas with AI. Powered by Ollama running locally.</p>
+    </div>
+
+    <div class="chat-box" id="chat-messages">
+        <div class="welcome-message">
+            <div class="ai-avatar">🤖</div>
+            <div class="message-bubble ai-message">
+                <p><strong>Hi! I'm your AI content assistant.</strong></p>
+                <p>I can help you brainstorm LinkedIn post ideas. Tell me:</p>
+                <ul>
+                    <li>What you're working on or learning</li>
+                    <li>A topic you want to write about</li>
+                    <li>An insight or experience to share</li>
+                </ul>
+                <p>I'll suggest content tailored to your voice and audience.</p>
+            </div>
+        </div>
+    </div>
+
+    <form
+        id="chat-form"
+        hx-post="/chat/message"
+        hx-target="#chat-messages"
+        hx-swap="beforeend"
+        hx-on::after-request="document.getElementById('chat-form').reset(); document.getElementById('message-input').focus();"
+    >
+        <div class="chat-input-container">
+            <textarea
+                id="message-input"
+                name="message"
+                placeholder="Ask for content ideas... (e.g., 'I just built a system using AI and want to share what I learned')"
+                rows="3"
+                required
+            ></textarea>
+            <button type="submit" class="btn-primary">Send</button>
+        </div>
+    </form>
+
+    <div class="chat-tips">
+        <p><strong>💡 Tips:</strong> Be specific! Instead of "write about AI", try "I built a content engine using Claude Code and want to explain how AI changes development workflows."</p>
+    </div>
+</div>
+{% endblock %}

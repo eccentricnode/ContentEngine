@@ -10,6 +10,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
 
 from lib.database import init_db, get_db, Post, PostStatus, Platform
+from lib.ollama import get_ollama_client
+from lib.errors import AIError
 
 
 # Initialize FastAPI app
@@ -144,6 +146,69 @@ async def api_stats(request: Request):
         "scheduled_count": scheduled_count,
         "posted_count": posted_count,
     })
+
+
+@app.get("/chat", response_class=HTMLResponse)
+async def chat_page(request: Request):
+    """AI chat interface for content ideation."""
+    return templates.TemplateResponse("chat.html", {
+        "request": request,
+    })
+
+
+@app.post("/chat/message", response_class=HTMLResponse)
+async def chat_message(request: Request):
+    """Handle chat message and return AI response."""
+    form_data = await request.form()
+    user_message = form_data.get("message", "").strip()
+
+    if not user_message:
+        return templates.TemplateResponse("components/chat_error.html", {
+            "request": request,
+            "error": "Please enter a message"
+        })
+
+    try:
+        ollama = get_ollama_client()
+        ai_response = ollama.generate_content_ideas(user_message)
+
+        return templates.TemplateResponse("components/chat_messages.html", {
+            "request": request,
+            "user_message": user_message,
+            "ai_response": ai_response,
+        })
+    except AIError as e:
+        return templates.TemplateResponse("components/chat_error.html", {
+            "request": request,
+            "error": str(e)
+        })
+
+
+@app.post("/chat/draft", response_class=HTMLResponse)
+async def draft_from_chat(request: Request):
+    """Create a draft post from AI-suggested content."""
+    form_data = await request.form()
+    content = form_data.get("content", "").strip()
+
+    if not content:
+        return "<p style='color: red;'>No content provided</p>"
+
+    db = get_db()
+    post = Post(
+        content=content,
+        platform=Platform.LINKEDIN,
+        status=PostStatus.DRAFT,
+    )
+    db.add(post)
+    db.commit()
+    post_id = post.id
+    db.close()
+
+    return f"""
+    <div style='background: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-top: 1rem;'>
+        ✅ Draft created (ID: {post_id})! <a href='/posts/{post_id}' style='color: #166534; text-decoration: underline;'>View post →</a>
+    </div>
+    """
 
 
 # Jinja2 filters for templates
