@@ -9,7 +9,7 @@ from lib.errors import AIError
 class OllamaClient:
     """Client for interacting with Ollama API."""
 
-    def __init__(self, host: Optional[str] = None, model: str = "llama3.2"):
+    def __init__(self, host: Optional[str] = None, model: str = "llama3:8b"):
         """Initialize Ollama client.
 
         Args:
