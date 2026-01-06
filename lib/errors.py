@@ -24,3 +24,8 @@ class OAuthError(ContentEngineError):
 class ConfigurationError(ContentEngineError):
     """Configuration or environment variable error."""
     pass
+
+
+class AIError(ContentEngineError):
+    """AI/LLM operation error."""
+    pass
