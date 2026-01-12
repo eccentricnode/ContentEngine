@@ -3,7 +3,8 @@
 import json
 import os
 import requests
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import List, Optional
 
 from lib.context_capture import ProjectNote, SessionSummary
@@ -205,3 +206,36 @@ def _build_context_summary(
                 lines.append(f"Insights: {', '.join(project.key_insights[:3])}")
 
     return "\n".join(lines)
+
+
+def save_context(context: DailyContext, output_dir: str = "context") -> str:
+    """
+    Save DailyContext to a JSON file.
+
+    Args:
+        context: DailyContext object to save
+        output_dir: Directory to save context files (defaults to "context/")
+
+    Returns:
+        Path to the saved file
+
+    Raises:
+        OSError: If file write fails
+    """
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # Use date from context or today
+    filename = f"{context.date or 'unknown'}.json"
+    file_path = output_path / filename
+
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(asdict(context), f, indent=2, default=str)
+
+        logger.info(f"Context saved to {file_path}")
+        return str(file_path)
+
+    except Exception as e:
+        logger.error(f"Failed to save context: {e}")
+        raise OSError(f"Failed to save context to {file_path}: {e}")

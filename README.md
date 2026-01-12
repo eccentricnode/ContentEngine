@@ -10,7 +10,7 @@ Content Engine is a multi-phase AI system that:
 - Generates and posts content across multiple platforms (LinkedIn, Twitter, blog)
 - Learns from engagement data and self-improves
 
-**Current Status:** Phase 1 - Basic posting infrastructure
+**Current Status:** Phase 2 Complete - Context Capture Layer
 
 ## Architecture
 
@@ -100,6 +100,38 @@ uv run python scripts/migrate_oauth.py
 
 ### Usage
 
+**Context Capture (Phase 2):**
+
+```bash
+# Capture daily context from sessions and projects
+uv run content-engine capture-context
+
+# Capture context for specific date
+uv run content-engine capture-context --date 2026-01-12
+
+# Custom directories
+uv run content-engine capture-context \
+  --sessions-dir ~/.claude/History/Sessions/ \
+  --projects-dir ~/Documents/Folio/1-Projects/ \
+  --output-dir context/
+
+# View captured context
+cat context/2026-01-12.json
+```
+
+Context capture automatically:
+1. Reads PAI session history (JSON/JSONL files)
+2. Reads project notes from Folio (Markdown with frontmatter)
+3. Synthesizes with local LLM (Ollama llama3:8b)
+4. Extracts themes, decisions, and progress
+5. Saves structured JSON to `context/YYYY-MM-DD.json`
+
+**Prerequisites for context capture:**
+- Ollama installed and running (`ollama serve`)
+- llama3:8b model pulled (`ollama pull llama3:8b`)
+- Session history at `~/.claude/History/Sessions/` (optional)
+- Project notes at `~/Documents/Folio/1-Projects/` (optional)
+
 **Content Engine CLI:**
 
 ```bash
@@ -174,9 +206,13 @@ Deploy to server at `192.168.0.5`:
 ## Roadmap
 
 - [x] Phase 1: LinkedIn OAuth & posting infrastructure
-- [x] Phase 1.5: Database, CLI, and scheduled posting (CURRENT)
-- [ ] Phase 2: Context capture from session history
-- [ ] Phase 3: Semantic blueprint architecture
+- [x] Phase 1.5: Database, CLI, and scheduled posting
+- [x] Phase 2: Context capture from session history (COMPLETE)
+  - [x] Session history parser (CE-001)
+  - [x] Project notes aggregator (CE-002)
+  - [x] Context synthesizer with Ollama (CE-003)
+  - [x] Context storage and CLI (CE-004)
+- [ ] Phase 3: Semantic blueprint architecture (NEXT)
 - [ ] Phase 4: Brand Planner agent
 - [ ] Phase 5: Autonomous content generation
 - [ ] Phase 6: Engagement feedback loops

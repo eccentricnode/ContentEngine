@@ -7,7 +7,10 @@ from typing import Optional
 import click
 from sqlalchemy import select
 
+from lib.context_capture import read_project_notes, read_session_history
+from lib.context_synthesizer import save_context, synthesize_daily_context
 from lib.database import init_db, get_db, Post, PostStatus, Platform, OAuthToken
+from lib.errors import AIError
 from lib.logger import setup_logger
 from agents.linkedin.post import post_to_linkedin
 
@@ -242,6 +245,90 @@ def reject(post_id: int) -> None:
 
     click.echo(f"✅ Post {post_id} rejected")
     db.close()
+
+
+@cli.command("capture-context")
+@click.option("--date", help="Date to capture context for (YYYY-MM-DD), defaults to today")
+@click.option("--sessions-dir", help="Custom session history directory")
+@click.option("--projects-dir", help="Custom projects directory")
+@click.option("--output-dir", default="context", help="Output directory for context files")
+def capture_context(
+    date: Optional[str],
+    sessions_dir: Optional[str],
+    projects_dir: Optional[str],
+    output_dir: str,
+) -> None:
+    """
+    Capture daily context from sessions and projects.
+
+    Reads PAI session history and project notes, synthesizes with local LLM,
+    and saves structured context to JSON file.
+    """
+    # Determine date
+    if date:
+        try:
+            context_date = datetime.strptime(date, "%Y-%m-%d")
+            date_str = date
+        except ValueError:
+            click.echo("❌ Invalid date format. Use YYYY-MM-DD")
+            sys.exit(1)
+    else:
+        context_date = datetime.now()
+        date_str = context_date.strftime("%Y-%m-%d")
+
+    click.echo(f"📅 Capturing context for {date_str}...")
+
+    try:
+        # Read session history
+        click.echo("📖 Reading session history...")
+        sessions = read_session_history(sessions_dir)
+        click.echo(f"   Found {len(sessions)} sessions")
+
+        # Read project notes
+        click.echo("📁 Reading project notes...")
+        try:
+            projects = read_project_notes(projects_dir)
+            click.echo(f"   Found {len(projects)} projects")
+        except FileNotFoundError:
+            click.echo("   ⚠️  Projects directory not found, continuing without projects")
+            projects = []
+
+        # Synthesize with LLM
+        click.echo("🤖 Synthesizing with Ollama...")
+        daily_context = synthesize_daily_context(
+            sessions=sessions, projects=projects, date=date_str
+        )
+
+        # Save to file
+        click.echo("💾 Saving context...")
+        file_path = save_context(daily_context, output_dir)
+
+        # Print summary
+        click.echo("\n✅ Context captured successfully!")
+        click.echo(f"   Sessions: {len(sessions)}")
+        click.echo(f"   Projects: {len(projects)}")
+        click.echo(f"   Themes: {len(daily_context.themes)}")
+        click.echo(f"   Decisions: {len(daily_context.decisions)}")
+        click.echo(f"   Progress: {len(daily_context.progress)}")
+        click.echo(f"\n📄 Saved to: {file_path}")
+
+        # Show themes preview
+        if daily_context.themes:
+            click.echo("\n🔍 Key themes:")
+            for theme in daily_context.themes[:3]:
+                click.echo(f"   • {theme}")
+
+    except FileNotFoundError as e:
+        click.echo(f"❌ {e}")
+        sys.exit(1)
+    except AIError as e:
+        click.echo(f"❌ AI synthesis failed: {e}")
+        click.echo("\n💡 Make sure Ollama is running: ollama serve")
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to capture context: {e}")
+        logger.exception("Context capture failed")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

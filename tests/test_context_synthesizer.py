@@ -1,6 +1,9 @@
 """Tests for context synthesizer module."""
 
+import json
+import tempfile
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -10,6 +13,7 @@ from lib.context_synthesizer import (
     DailyContext,
     _build_context_summary,
     check_ollama_health,
+    save_context,
     synthesize_daily_context,
 )
 from lib.errors import AIError
@@ -329,3 +333,87 @@ def test_build_context_summary_limits_items():
 
     assert session_count == 10
     assert project_count == 10
+
+
+def test_save_context_success():
+    """Test successful context saving."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        context = DailyContext(
+            themes=["Theme 1", "Theme 2"],
+            decisions=["Decision 1"],
+            progress=["Progress 1"],
+            date="2026-01-12",
+            raw_data={"sessions_count": 5},
+        )
+
+        file_path = save_context(context, output_dir=tmpdir)
+
+        assert Path(file_path).exists()
+        assert "2026-01-12.json" in file_path
+
+        # Verify content
+        with open(file_path, "r") as f:
+            saved_data = json.load(f)
+
+        assert saved_data["date"] == "2026-01-12"
+        assert len(saved_data["themes"]) == 2
+        assert "Theme 1" in saved_data["themes"]
+
+
+def test_save_context_creates_directory():
+    """Test that save_context creates output directory if missing."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_dir = Path(tmpdir) / "nested" / "context"
+        context = DailyContext(date="2026-01-12")
+
+        file_path = save_context(context, output_dir=str(output_dir))
+
+        assert Path(file_path).exists()
+        assert output_dir.exists()
+
+
+def test_save_context_default_directory():
+    """Test save_context with default directory."""
+    context = DailyContext(date="2026-01-12-test")
+
+    try:
+        file_path = save_context(context)
+        assert "context/2026-01-12-test.json" in file_path
+        assert Path(file_path).exists()
+    finally:
+        # Cleanup
+        if Path(file_path).exists():
+            Path(file_path).unlink()
+
+
+def test_save_context_no_date():
+    """Test save_context with no date in context."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        context = DailyContext(themes=["Test"])
+
+        file_path = save_context(context, output_dir=tmpdir)
+
+        assert "unknown.json" in file_path
+
+
+def test_save_context_overwrites_existing():
+    """Test that save_context overwrites existing file."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        context1 = DailyContext(
+            themes=["Original"], date="2026-01-12"
+        )
+        context2 = DailyContext(
+            themes=["Updated"], date="2026-01-12"
+        )
+
+        file_path1 = save_context(context1, output_dir=tmpdir)
+        file_path2 = save_context(context2, output_dir=tmpdir)
+
+        assert file_path1 == file_path2
+
+        # Verify updated content
+        with open(file_path2, "r") as f:
+            saved_data = json.load(f)
+
+        assert "Updated" in saved_data["themes"]
+        assert "Original" not in saved_data["themes"]
