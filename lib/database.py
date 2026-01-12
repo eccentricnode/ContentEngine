@@ -5,8 +5,8 @@ from typing import Optional
 from enum import Enum
 from pathlib import Path
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Enum as SQLEnum
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Enum as SQLEnum, ForeignKey, Boolean
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker, relationship
 
 
 # Database path (SQLite file in project root)
@@ -40,6 +40,74 @@ class Platform(str, Enum):
     BLOG = "blog"
 
 
+class User(Base):
+    """User account model."""
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    linkedin_sub = Column(String(255), unique=True, nullable=False)
+    email = Column(String(255), nullable=True)
+    name = Column(String(255), nullable=True)
+    profile_picture_url = Column(String(1024), nullable=True)
+
+    # OAuth tokens
+    access_token = Column(String(1024), nullable=True)
+    refresh_token = Column(String(1024), nullable=True)
+    token_expires_at = Column(DateTime, nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_login_at = Column(DateTime, nullable=True)
+
+    # Relationships
+    posts = relationship("Post", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
+    chat_messages = relationship("ChatMessage", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, email={self.email})>"
+
+
+class Session(Base):
+    """User session model."""
+
+    __tablename__ = "sessions"
+
+    id = Column(String(255), primary_key=True)  # UUID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+
+    # Relationships
+    user = relationship("User", back_populates="sessions")
+
+    def __repr__(self) -> str:
+        return f"<Session(id={self.id}, user_id={self.user_id})>"
+
+
+class ChatMessage(Base):
+    """Chat conversation history."""
+
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # NULL = demo mode
+    role = Column(String(20), nullable=False)  # 'user' or 'assistant'
+    content = Column(Text, nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="chat_messages")
+
+    def __repr__(self) -> str:
+        return f"<ChatMessage(id={self.id}, role={self.role})>"
+
+
 class Post(Base):
     """Content post model."""
 
@@ -50,6 +118,10 @@ class Post(Base):
     platform = Column(SQLEnum(Platform), nullable=False, default=Platform.LINKEDIN)
     status = Column(SQLEnum(PostStatus), nullable=False, default=PostStatus.DRAFT)
 
+    # User ownership (NULL = demo post by Austin)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_demo = Column(Boolean, default=False, nullable=False)
+
     # Metadata
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -59,6 +131,9 @@ class Post(Base):
     # External references
     external_id = Column(String(255), nullable=True)  # LinkedIn post ID, etc.
     error_message = Column(Text, nullable=True)
+
+    # Relationships
+    user = relationship("User", back_populates="posts")
 
     def __repr__(self) -> str:
         return f"<Post(id={self.id}, platform={self.platform}, status={self.status})>"

@@ -60,27 +60,67 @@
         <div class="post-detail-actions">
             <a href="/posts" class="btn-secondary">← Back to Posts</a>
 
-            <div class="demo-actions">
+            {% if request.state.is_authenticated %}
+            <!-- Authenticated Mode: Functional buttons -->
+            <div class="action-buttons">
                 {% if post.status.value == 'draft' %}
-                <button class="btn-demo primary" disabled title="👋 This is Austin's demo! Watch the Loom video to see me approve posts in action.">
+                <button class="btn-primary" hx-post="/posts/{{ post.id }}/approve" hx-swap="outerHTML">
                     ✅ Approve & Post
                 </button>
-                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see scheduling in action.">
+                <button class="btn-secondary" hx-post="/posts/{{ post.id }}/schedule" hx-swap="outerHTML">
                     📅 Schedule
                 </button>
                 {% elif post.status.value == 'scheduled' %}
-                <button class="btn-demo primary" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">
+                <button class="btn-primary" hx-post="/posts/{{ post.id }}/post-now" hx-swap="outerHTML">
                     🚀 Post Now
                 </button>
-                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">
+                <button class="btn-secondary" hx-post="/posts/{{ post.id }}/cancel-schedule" hx-swap="outerHTML">
                     ⏸️ Cancel Schedule
                 </button>
                 {% elif post.status.value == 'posted' and post.platform.value == 'linkedin' %}
                 <a href="https://www.linkedin.com/feed/" target="_blank" class="btn-primary">View on LinkedIn →</a>
                 {% endif %}
-                <button class="btn-demo" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">✏️ Edit</button>
-                <button class="btn-demo danger" disabled title="👋 This is Austin's demo! Watch the Loom video to see it in action.">🗑️ Delete</button>
+                <button class="btn-secondary" hx-get="/posts/{{ post.id }}/edit" hx-swap="innerHTML" hx-target=".post-detail">
+                    ✏️ Edit
+                </button>
+                <button class="btn-danger" hx-delete="/posts/{{ post.id }}" hx-confirm="Are you sure you want to delete this post?" hx-swap="outerHTML">
+                    🗑️ Delete
+                </button>
             </div>
+            {% else %}
+            <!-- Demo Mode: Ephemeral buttons (will add JS handlers in Phase 3) -->
+            <div class="demo-actions">
+                {% if post.status.value == 'draft' %}
+                <button class="btn-demo primary" data-action="approve" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to approve and post.">
+                    ✅ Approve & Post
+                </button>
+                <button class="btn-demo" data-action="schedule" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to schedule posts.">
+                    📅 Schedule
+                </button>
+                {% elif post.status.value == 'scheduled' %}
+                <button class="btn-demo primary" data-action="post-now" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to post immediately.">
+                    🚀 Post Now
+                </button>
+                <button class="btn-demo" data-action="cancel-schedule" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to manage scheduled posts.">
+                    ⏸️ Cancel Schedule
+                </button>
+                {% elif post.status.value == 'posted' and post.platform.value == 'linkedin' %}
+                <a href="https://www.linkedin.com/feed/" target="_blank" class="btn-primary">View on LinkedIn →</a>
+                {% endif %}
+                <button class="btn-demo" data-action="edit" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to edit posts.">
+                    ✏️ Edit
+                </button>
+                <button class="btn-demo danger" data-action="delete" data-post-id="{{ post.id }}"
+                        title="👋 Demo mode! Sign in with LinkedIn to delete posts.">
+                    🗑️ Delete
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

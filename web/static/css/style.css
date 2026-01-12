@@ -33,28 +33,56 @@ body {
     padding: 0 20px;
 }
 
-/* Demo Banner */
-.demo-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+/* Auth Status Bar */
+.auth-status-bar {
     padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.demo-banner p {
+.auth-status-bar p {
     margin: 0;
     font-size: 0.95rem;
 }
 
-.demo-banner a {
-    color: white;
+.auth-status-bar a {
     text-decoration: underline;
     font-weight: 600;
 }
 
-.demo-banner a:hover {
+.auth-status-bar a:hover {
     text-decoration: none;
+}
+
+/* Demo Mode (purple gradient) */
+.auth-status-bar.demo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.auth-status-bar.demo a {
+    color: white;
+}
+
+.auth-status-bar.demo .sign-in-link {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.auth-status-bar.demo .sign-in-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Authenticated Mode (green) */
+.auth-status-bar.authenticated {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.auth-status-bar.authenticated a {
+    color: #166534;
 }
 
 /* Header */

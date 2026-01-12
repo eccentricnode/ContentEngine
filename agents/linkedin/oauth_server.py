@@ -42,7 +42,7 @@ class OAuthHandler(BaseHTTPRequestHandler):
             self.send_header("Location", auth_url)
             self.end_headers()
 
-        elif parsed_url.path == "/callback":
+        elif parsed_url.path == "/auth/callback":
             # OAuth callback with authorization code
             query_params = parse_qs(parsed_url.query)
 

@@ -27,11 +27,30 @@
         </div>
     </header>
 
-    <div class="demo-banner">
+    {% if request.state.is_authenticated %}
+    <!-- Authenticated Mode -->
+    <div class="auth-status-bar authenticated">
         <div class="container">
-            <p>👋 <strong>This is a live demo of Austin's Content Engine.</strong> All buttons are disabled for demo purposes. <a href="https://your-loom-link-here" target="_blank">Watch the Loom video</a> to see it in action, or check out the <a href="https://github.com/eccentricnode/ContentEngine" target="_blank">GitHub repo</a>.</p>
+            <p>
+                ✅ <strong>Authenticated as {{ request.state.user.name or request.state.user.email }}</strong>
+                · You have full access to create, edit, and manage posts.
+                · <a href="/auth/logout">Sign out</a>
+            </p>
         </div>
     </div>
+    {% else %}
+    <!-- Demo Mode -->
+    <div class="auth-status-bar demo">
+        <div class="container">
+            <p>
+                👋 <strong>Demo Mode</strong> – You're viewing Austin's Content Engine.
+                Try the UI (changes won't be saved).
+                <a href="/auth/linkedin" class="sign-in-link">Sign in with LinkedIn</a> for full access.
+                · <a href="https://github.com/eccentricnode/ContentEngine" target="_blank">GitHub</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
 
     <main class="container">
         {% block content %}{% endblock %}
