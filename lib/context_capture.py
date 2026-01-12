@@ -1,7 +1,8 @@
-"""Context capture module for reading PAI session history."""
+"""Context capture module for reading PAI session history and project notes."""
 
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -32,6 +33,28 @@ class SessionSummary:
     topics: List[str] = field(default_factory=list)
     decisions: List[str] = field(default_factory=list)
     file_path: str = ""
+
+
+@dataclass
+class ProjectNote:
+    """
+    Structured representation of a project note from Folio.
+
+    Attributes:
+        project_name: Name of the project
+        last_updated: Last modification date
+        key_insights: List of key insights or notes
+        current_status: Current status of the project
+        file_path: Path to the original markdown file
+        tags: Optional tags from frontmatter
+    """
+
+    project_name: str
+    last_updated: datetime
+    key_insights: List[str] = field(default_factory=list)
+    current_status: str = ""
+    file_path: str = ""
+    tags: List[str] = field(default_factory=list)
 
 
 def read_session_history(
@@ -245,3 +268,237 @@ def _extract_decisions(data: Dict[str, Any]) -> List[str]:
                                     break
 
     return decisions[:5]  # Limit to 5 key decisions
+
+
+def read_project_notes(
+    projects_dir: Optional[str] = None, limit: Optional[int] = None
+) -> List[ProjectNote]:
+    """
+    Read and parse project notes from Folio markdown files.
+
+    Args:
+        projects_dir: Path to projects directory (defaults to ~/Documents/Folio/1-Projects/)
+        limit: Maximum number of project notes to return (most recent first)
+
+    Returns:
+        List of ProjectNote objects, sorted by last_updated (most recent first)
+
+    Raises:
+        FileNotFoundError: If projects directory does not exist
+    """
+    if projects_dir is None:
+        projects_dir = os.path.expanduser("~/Documents/Folio/1-Projects/")
+
+    projects_path = Path(projects_dir)
+
+    if not projects_path.exists():
+        logger.warning(f"Projects directory not found: {projects_path}")
+        raise FileNotFoundError(f"Projects directory not found: {projects_path}")
+
+    notes: List[ProjectNote] = []
+
+    # Find all markdown files (use rglob to avoid duplicates)
+    md_files = list(projects_path.rglob("*.md"))
+
+    if not md_files:
+        logger.info(f"No markdown files found in {projects_path}")
+        return notes
+
+    logger.info(f"Found {len(md_files)} markdown files")
+
+    for file_path in md_files:
+        try:
+            note = _parse_project_note(file_path)
+            if note:
+                notes.append(note)
+        except Exception as e:
+            logger.warning(f"Failed to parse {file_path}: {e}")
+            continue
+
+    # Sort by last_updated, most recent first
+    notes.sort(key=lambda n: n.last_updated, reverse=True)
+
+    if limit:
+        notes = notes[:limit]
+
+    logger.info(f"Successfully parsed {len(notes)} project notes")
+    return notes
+
+
+def _parse_project_note(file_path: Path) -> Optional[ProjectNote]:
+    """
+    Parse a single markdown project note file.
+
+    Args:
+        file_path: Path to markdown file
+
+    Returns:
+        ProjectNote object or None if parsing fails
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Extract project name from filename or frontmatter
+        project_name = file_path.stem.replace("-", " ").replace("_", " ").title()
+
+        # Get last updated from file modification time
+        last_updated = datetime.fromtimestamp(file_path.stat().st_mtime)
+
+        # Try parsing frontmatter first
+        frontmatter_data = _parse_frontmatter(content)
+
+        if frontmatter_data:
+            # Override with frontmatter values if present
+            project_name = frontmatter_data.get("title", project_name)
+            if "date" in frontmatter_data or "updated" in frontmatter_data:
+                date_str = frontmatter_data.get("updated") or frontmatter_data.get("date")
+                try:
+                    if isinstance(date_str, str):
+                        last_updated = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+                except (ValueError, TypeError):
+                    pass
+
+            tags = frontmatter_data.get("tags", [])
+            if isinstance(tags, str):
+                tags = [t.strip() for t in tags.split(",")]
+            elif not isinstance(tags, list):
+                tags = []
+
+            # Extract status from frontmatter
+            current_status = frontmatter_data.get("status", "")
+        else:
+            tags = []
+            current_status = ""
+
+        # Parse markdown content for insights and status
+        key_insights, parsed_status = _parse_markdown_content(content)
+
+        # Use parsed status if no frontmatter status
+        if not current_status:
+            current_status = parsed_status
+
+        return ProjectNote(
+            project_name=project_name,
+            last_updated=last_updated,
+            key_insights=key_insights,
+            current_status=current_status,
+            file_path=str(file_path),
+            tags=tags,
+        )
+
+    except Exception as e:
+        logger.error(f"Error parsing project note {file_path}: {e}")
+        return None
+
+
+def _parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
+    """
+    Parse YAML frontmatter from markdown content.
+
+    Args:
+        content: Markdown file content
+
+    Returns:
+        Dictionary of frontmatter data or None if no frontmatter
+    """
+    # Check for YAML frontmatter (--- at start and end)
+    if not content.startswith("---"):
+        return None
+
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        return None
+
+    frontmatter_text = parts[1].strip()
+
+    # Simple YAML parser for common patterns (key: value)
+    frontmatter_data: Dict[str, Any] = {}
+
+    for line in frontmatter_text.split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Match "key: value" pattern
+        match = re.match(r"^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.+)$", line)
+        if match:
+            key, value = match.groups()
+            value = value.strip()
+
+            # Handle quoted strings
+            if (value.startswith('"') and value.endswith('"')) or (
+                value.startswith("'") and value.endswith("'")
+            ):
+                value = value[1:-1]
+
+            # Handle arrays [item1, item2]
+            if value.startswith("[") and value.endswith("]"):
+                items = value[1:-1].split(",")
+                value = [item.strip().strip('"').strip("'") for item in items if item.strip()]
+
+            frontmatter_data[key] = value
+
+    return frontmatter_data if frontmatter_data else None
+
+
+def _parse_markdown_content(content: str) -> tuple[List[str], str]:
+    """
+    Parse markdown content to extract key insights and status.
+
+    Args:
+        content: Markdown file content
+
+    Returns:
+        Tuple of (key_insights list, current_status string)
+    """
+    # Remove frontmatter if present
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            content = parts[2]
+
+    key_insights: List[str] = []
+    current_status = ""
+
+    lines = content.split("\n")
+
+    # Track current section
+    current_section = ""
+
+    for line in lines:
+        line = line.strip()
+
+        # Check for headings
+        if line.startswith("#"):
+            heading_match = re.match(r"^#+\s+(.+)$", line)
+            if heading_match:
+                current_section = heading_match.group(1).lower()
+
+        # Extract status from status sections
+        if current_section in ["status", "current status", "project status"]:
+            if line and not line.startswith("#"):
+                if not current_status:
+                    current_status = line[:200]
+
+        # Extract insights from key sections
+        if current_section in [
+            "insights",
+            "key insights",
+            "learnings",
+            "notes",
+            "summary",
+            "overview",
+        ]:
+            # Extract bullet points or sentences
+            if line.startswith("-") or line.startswith("*"):
+                insight = line.lstrip("-*").strip()
+                if insight and len(insight) > 10:
+                    key_insights.append(insight[:300])
+            elif line and not line.startswith("#") and len(line) > 20:
+                key_insights.append(line[:300])
+
+    # Limit insights
+    key_insights = key_insights[:10]
+
+    return key_insights, current_status
