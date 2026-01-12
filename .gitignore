@@ -56,3 +56,5 @@ temp/
 *.sqlite3
 content.db
 data/
+*.db
+*_backup.json
