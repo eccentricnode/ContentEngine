@@ -1,0 +1,23 @@
+# Content Engine - Ralph Progress
+
+## Phase 2: Context Capture Layer
+
+**Goal:** Build autonomous context aggregation system that reads PAI session history and project notes, synthesizes with local LLM, and structures for semantic blueprint consumption.
+
+**Status:** Starting Phase 2 - 4 stories to implement
+
+---
+
+## 2026-01-12 - Setup
+
+- Created Ralph infrastructure for Content Engine
+- Added AGENTS.md with build/test patterns
+- Designed Phase 2 PRD (4 stories):
+  - CE-001: Session History Parser
+  - CE-002: Project Notes Aggregator
+  - CE-003: Context Synthesizer with Ollama
+  - CE-004: Context Storage and CLI
+
+Ready for Ralph autonomous build.
+
+---
