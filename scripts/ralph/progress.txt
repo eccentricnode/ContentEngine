@@ -21,3 +21,153 @@
 Ready for Ralph autonomous build.
 
 ---
+
+## 2026-01-12 - CE-001
+- Implemented: Session History Parser
+- Files:
+  - lib/context_capture.py (242 lines)
+  - tests/test_context_capture.py (305 lines, 19 tests)
+- Features:
+  - SessionSummary dataclass with type hints
+  - read_session_history() function with path expansion
+  - Supports both JSON and JSONL formats
+  - Extracts date, duration, topics, and key decisions
+  - Graceful error handling for missing/malformed files
+  - Comprehensive test coverage with fixtures
+- Tests: pytest ✓ (23 total, 19 new)
+- Learnings:
+  - PAI session files may be .json or .jsonl format
+  - Date parsing requires handling multiple timestamp formats (ISO, Unix)
+  - Fallback to file mtime when session metadata missing
+  - Topic/decision extraction benefits from keyword-based filtering
+  - Test isolation via tempfile.TemporaryDirectory ensures clean state
+- Commit: 26a2376
+
+---
+
+## 2026-01-12 - CE-002
+- Implemented: Project Notes Aggregator
+- Files:
+  - lib/context_capture.py (added 237 lines)
+  - tests/test_context_capture.py (added 265 lines, 17 new tests)
+- Features:
+  - ProjectNote dataclass with comprehensive fields
+  - read_project_notes() function with directory traversal
+  - YAML frontmatter parser (lightweight, no external deps)
+  - Markdown heading parser as fallback
+  - Extracts project name, last updated, insights, status, tags
+  - Handles malformed files gracefully
+  - Comprehensive test coverage with fixtures
+- Tests: pytest ✓ (40 total, 17 new)
+- Learnings:
+  - rglob() avoids duplicates vs glob() + glob(**/)
+  - Lightweight YAML parser using regex for key:value patterns
+  - Markdown section parsing requires tracking current heading context
+  - Frontmatter date formats vary (ISO, custom strings)
+  - File mtime as fallback when frontmatter missing
+  - Test fixtures with tempfile ensure isolation
+- Commit: 1b7589e
+
+---
+
+## 2026-01-12 - CE-003
+- Implemented: Context Synthesizer with Ollama
+- Files:
+  - lib/context_synthesizer.py (231 lines)
+  - tests/test_context_synthesizer.py (307 lines, 17 tests)
+- Features:
+  - DailyContext dataclass for structured insights
+  - synthesize_daily_context() with Ollama integration
+  - check_ollama_health() for connection validation
+  - Context summary builder (limits to 10 items)
+  - JSON format enforcement for LLM responses
+  - Parses themes, decisions, progress from LLM
+  - Error handling for connection/parsing failures
+  - Support for custom host and model
+- Tests: pytest ✓ (57 total, 17 new)
+- Learnings:
+  - Mock testing with unittest.mock for external API calls
+  - Ollama API uses /api/generate endpoint with format: json
+  - Generic Exception catching needed for mock.side_effect
+  - LLM may return non-list values, need type coercion
+  - Health check before synthesis prevents cryptic errors
+  - Context summary should be concise for token efficiency
+  - Test fixtures reduce duplication across test cases
+- Commit: ddfdb65
+
+---
+
+## 2026-01-12 - CE-004
+- Implemented: Context Storage and CLI
+- Files:
+  - lib/context_synthesizer.py (added save_context function)
+  - cli.py (added capture-context command)
+  - tests/test_context_synthesizer.py (added 5 tests, 62 total)
+  - README.md (updated with Phase 2 complete status and usage docs)
+  - context/ directory created for JSON storage
+- Features:
+  - save_context() writes DailyContext to JSON with date-based filename
+  - capture-context CLI command orchestrates full pipeline
+  - Pipeline: read sessions → read projects → synthesize → save
+  - --date flag for capturing context for specific dates
+  - --sessions-dir, --projects-dir, --output-dir options
+  - CLI prints summary (sessions, projects, themes, decisions, progress)
+  - Shows key themes preview after capture
+  - Comprehensive error handling (missing dirs, Ollama errors)
+  - Directory creation with parents=True, exist_ok=True
+- Tests: pytest ✓ (62 total, 5 new)
+- Learnings:
+  - dataclasses.asdict() for JSON serialization
+  - default=str in json.dump() handles datetime objects
+  - Click CLI groups allow subcommands in same file
+  - Graceful degradation when projects dir missing
+  - User-friendly error messages for Ollama connection issues
+  - Context files overwrite by design (idempotent)
+- Commit: 99149f8
+
+---
+
+## Phase 2 Summary
+
+**Status:** COMPLETE - All 4 stories implemented and tested (62 tests pass)
+
+**Deliverables:**
+- Session History Parser (CE-001)
+- Project Notes Aggregator (CE-002)
+- Context Synthesizer with Ollama (CE-003)
+- Context Storage and CLI (CE-004)
+
+**Architecture:**
+```
+Session History (JSON/JSONL)
+         ↓
+    read_session_history()
+         ↓
+   SessionSummary[]
+         ↓
+         ├→ synthesize_daily_context() ← Ollama llama3:8b
+         ↓
+Project Notes (Markdown)
+         ↓
+    read_project_notes()
+         ↓
+    ProjectNote[]
+         ↓
+    DailyContext (themes, decisions, progress)
+         ↓
+    save_context()
+         ↓
+context/YYYY-MM-DD.json
+```
+
+**Key Achievements:**
+- Zero external dependencies for frontmatter/markdown parsing
+- Comprehensive error handling throughout pipeline
+- Full test coverage with mocks for external services
+- CLI interface for easy daily operation
+- Flexible directory configuration via flags
+- Structured JSON output for Phase 3 consumption
+
+**Next Phase:** Phase 3 - Semantic Blueprints
+
+---

@@ -15,7 +15,7 @@
         "uv run pytest passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Foundation for context capture. Parse PAI session history into structured data."
     },
     {
@@ -32,7 +32,7 @@
         "uv run pytest passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Aggregate project notes from Folio for context injection."
     },
     {
@@ -50,7 +50,7 @@
         "uv run pytest passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Use local LLM to synthesize raw context into structured insights."
     },
     {
@@ -68,7 +68,7 @@
         "uv run pytest passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Complete the context capture pipeline with storage and CLI interface."
     }
   ]
