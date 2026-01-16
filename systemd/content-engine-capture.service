@@ -1,0 +1,16 @@
+[Unit]
+Description=Content Engine Daily Context Capture
+After=network.target ollama.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ajohn/ContentEngine
+Environment="PATH=/home/ajohn/.cargo/bin:/usr/bin:/bin"
+ExecStart=/home/ajohn/.cargo/bin/uv run content-engine capture-context
+
+# Logging
+StandardOutput=append:/home/ajohn/ContentEngine/capture.log
+StandardError=append:/home/ajohn/ContentEngine/capture-error.log
+
+[Install]
+WantedBy=default.target

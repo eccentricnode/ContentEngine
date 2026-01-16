@@ -1,0 +1,18 @@
+[Unit]
+Description=Content Engine Background Worker
+After=network.target ollama.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ajohn/ContentEngine
+Environment="PATH=/home/ajohn/.cargo/bin:/usr/bin:/bin"
+ExecStart=/home/ajohn/.cargo/bin/uv run content-worker
+Restart=always
+RestartSec=60
+
+# Logging
+StandardOutput=append:/home/ajohn/ContentEngine/worker.log
+StandardError=append:/home/ajohn/ContentEngine/worker-error.log
+
+[Install]
+WantedBy=default.target

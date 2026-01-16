@@ -162,7 +162,20 @@ class OAuthToken(Base):
 
 
 def init_db() -> None:
-    """Initialize database (create tables if they don't exist)."""
+    """Initialize database (create tables if they don't exist).
+
+    WARNING: This function is deprecated and kept for backwards compatibility.
+    Use Alembic migrations instead:
+        uv run alembic upgrade head
+
+    This function will be removed in a future version.
+    """
+    import warnings
+    warnings.warn(
+        "init_db() is deprecated. Use Alembic migrations: uv run alembic upgrade head",
+        DeprecationWarning,
+        stacklevel=2
+    )
     Base.metadata.create_all(engine)
 
 

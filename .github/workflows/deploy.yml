@@ -1,0 +1,93 @@
+name: Deploy ContentEngine
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          # Sync code to server
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='venv' \
+            --exclude='.venv' \
+            --exclude='.pytest_cache' \
+            --exclude='.mypy_cache' \
+            --exclude='*.log' \
+            --exclude='content.db' \
+            ./ $SERVER_USER@$SERVER_HOST:$SERVER_PATH/
+
+      - name: Install dependencies
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && ~/.cargo/bin/uv sync"
+
+      - name: Run database migrations
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && ~/.cargo/bin/uv run alembic upgrade head"
+
+      - name: Verify database schema
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && ~/.cargo/bin/uv run alembic current"
+
+      - name: Verify deployment
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          ssh $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && ~/.cargo/bin/uv run python -c 'from lib import context_capture; print(\"✅ Deployment successful!\")'"
+
+      - name: Restart services (if using systemd)
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          # Restart content-engine service if it exists
+          ssh $SERVER_USER@$SERVER_HOST "systemctl --user restart content-engine.service 2>/dev/null || echo 'Service not configured, skipping restart'"
+
+      - name: Send deployment notification
+        if: always()
+        run: |
+          echo "Deployment completed with status: ${{ job.status }}"
+          # Optional: Add Discord/Slack webhook notification here

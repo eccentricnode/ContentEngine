@@ -130,7 +130,27 @@ def restore_posts_as_demo(posts_data):
 
 def main():
     """Run the migration."""
+    import warnings
+    warnings.warn(
+        "This script is deprecated. Use Alembic migrations instead:\n"
+        "  uv run alembic upgrade head\n"
+        "See DATABASE.md for migration guide.",
+        DeprecationWarning
+    )
+
+    print("\n" + "="*60)
+    print("⚠️  WARNING: This migration script is DEPRECATED")
     print("="*60)
+    print("Use Alembic instead: uv run alembic upgrade head")
+    print("See DATABASE.md and MIGRATION_GUIDE.md for details")
+    print("="*60 + "\n")
+
+    proceed = input("Continue anyway? [y/N]: ")
+    if proceed.lower() != 'y':
+        print("Aborted.")
+        return
+
+    print("\n" + "="*60)
     print("Database Schema Migration")
     print("Adding user_id and is_demo columns to posts table")
     print("="*60 + "\n")

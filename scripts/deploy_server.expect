@@ -1,0 +1,79 @@
+#!/usr/bin/expect -f
+set timeout 300
+
+set server "ajohn@192.168.0.5"
+set password "Godisgreat14"
+
+# Copy SSH key
+spawn ssh-copy-id -o StrictHostKeyChecking=no $server
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "All keys were skipped" {
+        puts "SSH key already installed"
+    }
+    eof
+}
+
+# Clone or update repo
+spawn ssh $server "test -d ~/ContentEngine && echo 'exists' || echo 'missing'"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "exists" {
+        puts "\n==> Updating ContentEngine..."
+        spawn ssh $server "cd ~/ContentEngine && git pull origin master"
+        expect {
+            "password:" { send "$password\r" }
+            eof
+        }
+    }
+    "missing" {
+        puts "\n==> Cloning ContentEngine..."
+        spawn ssh $server "git clone https://github.com/eccentricnode/ContentEngine.git ~/ContentEngine"
+        expect {
+            "password:" { send "$password\r" }
+            eof
+        }
+    }
+}
+
+# Check and install uv
+puts "\n==> Checking for uv..."
+spawn ssh $server "command -v uv || curl -LsSf https://astral.sh/uv/install.sh | sh"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# Install dependencies
+puts "\n==> Installing dependencies..."
+spawn ssh $server "cd ~/ContentEngine && ~/.cargo/bin/uv sync"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+# Configure git
+puts "\n==> Configuring git..."
+spawn ssh $server "cd ~/ContentEngine && git config user.name 'Austin Johnson' && git config user.email 'austin@theaustinjohnson.com'"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n✅ Server setup complete!"
+puts "SSH to server: ssh $server"

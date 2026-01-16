@@ -98,6 +98,25 @@ After OAuth flow, migrate your token to the database:
 uv run python scripts/migrate_oauth.py
 ```
 
+### Database Setup
+
+ContentEngine uses Alembic for database migrations.
+
+**Initialize database:**
+
+```bash
+# First time only - create database with latest schema
+uv run alembic upgrade head
+```
+
+**Check migration status:**
+
+```bash
+uv run alembic current
+```
+
+See [DATABASE.md](DATABASE.md) for detailed migration guide.
+
 ### Usage
 
 **Context Capture (Phase 2):**

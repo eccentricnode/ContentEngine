@@ -35,9 +35,10 @@ ai = [
 
 [project.scripts]
 content-engine = "cli:cli"
+content-worker = "worker:process_scheduled_posts"
+db-migrate = "scripts.db_migrate:main"
 linkedin-post = "agents.linkedin.post:main"
 linkedin-oauth = "agents.linkedin.oauth_server:main"
-content-worker = "worker:process_scheduled_posts"
 
 [build-system]
 requires = ["hatchling"]

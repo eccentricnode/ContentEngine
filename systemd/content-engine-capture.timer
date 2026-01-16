@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily Context Capture Timer
+Requires=content-engine-capture.service
+
+[Timer]
+# Run daily at 11:59 PM
+OnCalendar=daily
+OnCalendar=23:59
+Persistent=true
+
+[Install]
+WantedBy=timers.target
