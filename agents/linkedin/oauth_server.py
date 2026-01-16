@@ -1,8 +1,10 @@
 """LinkedIn OAuth 2.0 server for Content Engine."""
 
+import os
 import sys
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import requests
 
@@ -78,6 +80,49 @@ class OAuthHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+
+def update_env_file(access_token: str, user_sub: str) -> None:
+    """
+    Update .env file with new access token and user sub.
+
+    Args:
+        access_token: LinkedIn access token
+        user_sub: LinkedIn user sub identifier
+    """
+    env_path = Path(".env")
+
+    if not env_path.exists():
+        logger.warning(".env file not found, creating new one")
+        env_path.touch()
+
+    # Read existing .env
+    lines = env_path.read_text().splitlines()
+
+    # Update or add tokens
+    updated_lines = []
+    token_found = False
+    sub_found = False
+
+    for line in lines:
+        if line.startswith("LINKEDIN_ACCESS_TOKEN="):
+            updated_lines.append(f"LINKEDIN_ACCESS_TOKEN={access_token}")
+            token_found = True
+        elif line.startswith("LINKEDIN_USER_SUB="):
+            updated_lines.append(f"LINKEDIN_USER_SUB={user_sub}")
+            sub_found = True
+        else:
+            updated_lines.append(line)
+
+    # Add if not found
+    if not token_found:
+        updated_lines.append(f"LINKEDIN_ACCESS_TOKEN={access_token}")
+    if not sub_found:
+        updated_lines.append(f"LINKEDIN_USER_SUB={user_sub}")
+
+    # Write back
+    env_path.write_text("\n".join(updated_lines) + "\n")
+    logger.info("✅ Updated .env file with new credentials")
 
 
 def exchange_code_for_token(auth_code: str) -> tuple[str, str]:
@@ -171,9 +216,19 @@ def main() -> None:
         logger.info("\n" + "=" * 60)
         logger.info("🎉 OAuth flow completed successfully!")
         logger.info("=" * 60)
-        logger.info("\nAdd these to your .env file:")
-        logger.info(f"\nLINKEDIN_ACCESS_TOKEN={access_token}")
-        logger.info(f"LINKEDIN_USER_SUB={user_sub}\n")
+
+        # Auto-save to .env
+        try:
+            update_env_file(access_token, user_sub)
+            logger.info("\n✅ Credentials saved to .env file automatically!")
+            logger.info("\nYou can now use:")
+            logger.info("  uv run python -m agents.linkedin.test_connection")
+            logger.info("  uv run content-engine draft 'Your post'\n")
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to auto-save to .env: {e}")
+            logger.info("\nManually add these to your .env file:")
+            logger.info(f"\nLINKEDIN_ACCESS_TOKEN={access_token}")
+            logger.info(f"LINKEDIN_USER_SUB={user_sub}\n")
 
     except OAuthError as e:
         logger.error(f"❌ OAuth error: {e}")
