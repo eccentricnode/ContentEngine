@@ -6,7 +6,7 @@ Fetches post analytics (impressions, engagement, clicks) from LinkedIn API.
 import os
 import json
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List, Optional
 from dataclasses import dataclass, asdict
 import requests
 from pathlib import Path

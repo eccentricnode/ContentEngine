@@ -146,7 +146,7 @@ def approve(post_id: int, dry_run: bool) -> None:
 
     if not oauth_token:
         click.echo(f"❌ No OAuth token found for {post.platform.value}")
-        click.echo(f"Run OAuth flow first: uv run python -m agents.linkedin.oauth_server")
+        click.echo("Run OAuth flow first: uv run python -m agents.linkedin.oauth_server")
         db.close()
         sys.exit(1)
 
@@ -174,7 +174,7 @@ def approve(post_id: int, dry_run: bool) -> None:
         click.echo(f"\n✅ Post {post_id} published successfully!")
 
         if not dry_run and post.platform == Platform.LINKEDIN:
-            click.echo(f"View at: https://www.linkedin.com/feed/")
+            click.echo("View at: https://www.linkedin.com/feed/")
 
     except Exception as e:
         post.status = PostStatus.FAILED
@@ -213,12 +213,12 @@ def schedule(post_id: int, scheduled_time: str) -> None:
     try:
         scheduled_dt = datetime.strptime(scheduled_time, "%Y-%m-%d %H:%M")
     except ValueError:
-        click.echo(f"❌ Invalid time format. Use: YYYY-MM-DD HH:MM (e.g., 2024-01-15 09:00)")
+        click.echo("❌ Invalid time format. Use: YYYY-MM-DD HH:MM (e.g., 2024-01-15 09:00)")
         db.close()
         sys.exit(1)
 
     if scheduled_dt < datetime.utcnow():
-        click.echo(f"❌ Scheduled time must be in the future")
+        click.echo("❌ Scheduled time must be in the future")
         db.close()
         sys.exit(1)
 
@@ -227,7 +227,7 @@ def schedule(post_id: int, scheduled_time: str) -> None:
     db.commit()
 
     click.echo(f"✅ Post {post_id} scheduled for {scheduled_dt}")
-    click.echo(f"Run worker to publish: uv run python -m worker")
+    click.echo("Run worker to publish: uv run python -m worker")
 
     db.close()
 
@@ -605,7 +605,7 @@ def generate(pillar: str, framework: Optional[str], date: Optional[str], model: 
         click.echo(preview)
         click.echo(f"{'='*60}")
 
-        click.echo(f"\n💡 Next steps:")
+        click.echo("\n💡 Next steps:")
         click.echo(f"   • Review: uv run content-engine show {post.id}")
         click.echo(f"   • Approve: uv run content-engine approve {post.id}")
 
@@ -671,7 +671,7 @@ def sunday_power_hour() -> None:
         result = execute_workflow("SundayPowerHour", workflow_inputs)
 
         if not result.success:
-            click.echo(f"\n❌ Workflow execution failed:")
+            click.echo("\n❌ Workflow execution failed:")
             for error in result.errors:
                 click.echo(f"   • {error}")
             sys.exit(1)
@@ -717,8 +717,8 @@ def sunday_power_hour() -> None:
             db.refresh(plan)
 
         # Print summary
-        click.echo(f"\n✅ Sunday Power Hour complete!")
-        click.echo(f"\n📊 Summary:")
+        click.echo("\n✅ Sunday Power Hour complete!")
+        click.echo("\n📊 Summary:")
         click.echo(f"   Total plans created: {len(created_plans)}")
 
         # Count by pillar
@@ -729,20 +729,20 @@ def sunday_power_hour() -> None:
             pillar_counts[plan.pillar] = pillar_counts.get(plan.pillar, 0) + 1
             framework_counts[plan.framework] = framework_counts.get(plan.framework, 0) + 1
 
-        click.echo(f"\n   Distribution by pillar:")
+        click.echo("\n   Distribution by pillar:")
         for pillar in ["what_building", "what_learning", "sales_tech", "problem_solution"]:
             count = pillar_counts.get(pillar, 0)
             percentage = (count / len(created_plans)) * 100
             click.echo(f"      • {pillar}: {count} ({percentage:.0f}%)")
 
-        click.echo(f"\n   Frameworks used:")
+        click.echo("\n   Frameworks used:")
         for framework, count in sorted(framework_counts.items()):
             click.echo(f"      • {framework}: {count}")
 
-        click.echo(f"\n💡 Next steps:")
+        click.echo("\n💡 Next steps:")
         click.echo(f"   • Review plans: SELECT * FROM content_plans WHERE week_start_date = '{week_start}'")
-        click.echo(f"   • Generate posts: Use 'generate' command for each plan")
-        click.echo(f"   • Time saved: ~92 minutes via batching!")
+        click.echo("   • Generate posts: Use 'generate' command for each plan")
+        click.echo("   • Time saved: ~92 minutes via batching!")
 
         db.close()
 

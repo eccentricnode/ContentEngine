@@ -72,7 +72,7 @@ def import_posts():
         if not existing_post:
             existing_post = db.query(Post).filter(
                 Post.content == content,
-                Post.is_demo == True
+                Post.is_demo
             ).first()
 
         if existing_post:
@@ -108,7 +108,7 @@ def import_posts():
     db.close()
 
     print("="*80)
-    print(f"✅ Import complete!")
+    print("✅ Import complete!")
     print(f"   Imported: {imported_count} posts")
     print(f"   Skipped: {skipped_count} posts (already exist)")
     print(f"   Total: {len(REAL_POSTS)} posts")

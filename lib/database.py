@@ -1,12 +1,11 @@
 """Database models and session management for Content Engine."""
 
 from datetime import datetime
-from typing import Optional
 from enum import Enum
 from pathlib import Path
 
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Enum as SQLEnum, ForeignKey, Boolean, JSON
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker, relationship
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 
 
 # Database path (SQLite file in project root)
