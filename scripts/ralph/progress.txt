@@ -1710,3 +1710,78 @@ for story completion. Schema documentation and file creation are complete.
 
 ---
 
+## [2026-01-17] - AN-005 - Schedule analytics collection cron job
+
+**Implemented:**
+- Created systemd service and timer files for automated LinkedIn analytics collection
+- Service runs `uv run content-engine collect-analytics` daily at 10:00 AM
+- Comprehensive documentation in DEPLOYMENT_CHECKLIST.md with setup instructions
+- Added testing checklist items for verifying systemd timers
+
+**Files changed:**
+- systemd/linkedin-analytics.service (new)
+- systemd/linkedin-analytics.timer (new)
+- DEPLOYMENT_CHECKLIST.md (added Step 7: Set Up Systemd Timers section)
+- scripts/ralph/prd.json (updated AN-005 passes: true)
+
+**Learnings:**
+- Systemd timers more reliable than cron jobs (better logging, missed run handling)
+- Type=oneshot for services that should run once per trigger
+- Persistent=true in timer ensures missed runs are caught up
+- OnCalendar=daily + OnCalendar=10:00 sets specific time
+- Environment variables can be set in service file or loaded from database
+- Requires= in timer ensures service is available
+- journalctl provides structured logging (better than cron mail)
+
+**Codebase patterns discovered:**
+- Systemd service pattern: Type=oneshot, WorkingDirectory, ExecStart
+- Logging pattern: StandardOutput/StandardError append to log files
+- Timer pattern: OnCalendar for schedule, Persistent=true for reliability
+- Environment variable pattern: can set in service file or load from database
+- Installation pattern: copy to /etc/systemd/system/, daemon-reload, enable, start
+- Verification pattern: systemctl list-timers, systemctl status, journalctl
+
+**Systemd Service Features:**
+- Runs daily at 10:00 AM (configurable)
+- Logs to ~/ContentEngine/analytics.log and analytics-error.log
+- Supports LINKEDIN_ACCESS_TOKEN from environment or database
+- After=network.target ensures network is available
+- WantedBy=default.target for automatic start
+
+**Systemd Timer Features:**
+- OnCalendar=daily + OnCalendar=10:00 for specific daily time
+- Persistent=true catches up missed runs (e.g., if system was off)
+- Requires=linkedin-analytics.service ensures service exists
+- WantedBy=timers.target for timer management
+
+**Setup Commands:**
+```bash
+sudo cp systemd/linkedin-analytics.* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable linkedin-analytics.timer
+sudo systemctl start linkedin-analytics.timer
+```
+
+**Verification Commands:**
+```bash
+systemctl list-timers --all | grep linkedin-analytics
+systemctl status linkedin-analytics.timer
+journalctl -u linkedin-analytics.service
+```
+
+**Documentation Updates:**
+- Added Step 7: Set Up Systemd Timers section to DEPLOYMENT_CHECKLIST.md
+- Documented both Context Capture timer (existing) and LinkedIn Analytics timer (new)
+- Included prerequisites, installation steps, and verification commands
+- Added alternative approach: using database token instead of environment variable
+- Updated Testing Checklist with systemd timer verification steps
+
+**Tests:**
+- pytest: PASS (408 tests, all passing)
+- No code changes, only systemd config files
+- Systemd files follow existing pattern from content-engine-capture timer
+
+**Commit:** 428ac17
+
+---
+

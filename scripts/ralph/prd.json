@@ -82,7 +82,7 @@
         "Note: Requires LINKEDIN_ACCESS_TOKEN in environment"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Automate daily analytics collection via systemd"
     }
   ]
