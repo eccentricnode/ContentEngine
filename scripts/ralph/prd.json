@@ -391,7 +391,7 @@
         "mypy + pytest pass"
       ],
       "priority": 25,
-      "passes": false,
+      "passes": true,
       "notes": "View blueprint details"
     },
     {

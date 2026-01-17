@@ -1311,3 +1311,96 @@ Total violations: 3
 
 ---
 
+## [2026-01-17] - CE-BP-025 - Add blueprints show CLI command
+
+**Implemented:**
+- Added `show` command to blueprints CLI group: `uv run content-engine blueprints show <name>`
+- Auto-detects blueprint type (framework → workflow → constraint fallback)
+- Displays formatted YAML using PyYAML with default_flow_style=False
+- Type-specific summaries at bottom:
+  - Frameworks: sections, validation rules, examples count
+  - Workflows: steps list with duration, total time
+  - Constraints: characteristics, pillars with percentages, forbidden phrases count
+- Optional --platform flag for framework blueprints (default: linkedin)
+- Color-coded output: cyan (header), blue (metadata)
+
+**Files changed:**
+- cli.py (added show command, imported yaml/blueprint loaders)
+- tests/test_blueprints_show_cli.py (new - 9 comprehensive tests)
+
+**Learnings:**
+- yaml.dump() with sort_keys=False preserves YAML order
+- Try/except FileNotFoundError chain for type detection (framework → workflow → constraint)
+- Click argument() for required positional args, option() for optional flags
+- Type-specific display logic improves user experience
+- YAML output + summary metadata gives both detail and overview
+
+**Codebase patterns discovered:**
+- Blueprint type detection: try loading as each type, use first success
+- Summary extraction: use .get() with defaults for safe field access
+- enumerate(items, 1) for 1-indexed step numbering
+- sum(step.get("field", 0) for step in steps) for aggregation
+- Color styling: cyan for headers, blue for metadata, red for errors
+
+**CLI output format:**
+```
+============================================================
+Framework: STF
+Platform: linkedin
+============================================================
+
+name: STF
+platform: linkedin
+description: Storytelling Framework
+structure:
+  sections:
+  - id: Problem
+    description: The challenge
+  ...
+validation:
+  min_chars: 600
+  max_chars: 1500
+  min_sections: 4
+
+============================================================
+
+📐 Structure:
+   Sections: 4
+      • Problem
+      • Tried
+      • Worked
+      • Lesson
+
+✓ Validation Rules:
+   Min characters: 600
+   Max characters: 1500
+   Min sections: 4
+
+📝 Examples: 2 provided
+```
+
+**Tests:**
+- 9 comprehensive tests:
+  - Command exists with help
+  - Blueprint not found error
+  - Show framework blueprint (STF)
+  - Show workflow blueprint (SundayPowerHour)
+  - Show constraint blueprint (BrandVoice)
+  - Show pillars constraint (ContentPillars)
+  - Custom platform option
+  - YAML output verification
+  - Exception handling
+- pytest: PASS (359 total tests, 9 new)
+- ruff: PASS (fixed 3 f-string warnings in new code)
+- mypy: PASS (no errors in new code)
+
+**Manual testing:**
+- `uv run content-engine blueprints show STF` ✓
+- `uv run content-engine blueprints show BrandVoice` ✓
+- `uv run content-engine blueprints show SundayPowerHour` ✓
+- `uv run content-engine blueprints show NONEXISTENT` → proper error ✓
+
+**Commit:** e3dc20c
+
+---
+
