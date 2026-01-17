@@ -1,0 +1,155 @@
+name: ContentPillars
+type: constraint
+description: Four content pillars with distribution percentages for balanced LinkedIn presence
+
+pillars:
+  what_building:
+    name: What I'm Building
+    description: Share current projects, features shipped, technical decisions, and building journey. The "builder showing their work" content.
+    percentage: 35
+    examples:
+      - "Shipped context capture for Content Engine using Claude's session history"
+      - "Built blueprint system with YAML-based framework encoding"
+      - "Refactored LinkedIn agent to use semantic validation"
+    characteristics:
+      - specific_metrics: "Lines of code, features shipped, performance improvements"
+      - technical_depth: "Architecture decisions, trade-offs, implementation details"
+      - progress_narrative: "Before/after, iteration journey, lessons learned while building"
+    themes:
+      - new_features
+      - technical_decisions
+      - architecture_patterns
+      - tool_selection
+      - debugging_wins
+      - refactoring
+
+  what_learning:
+    name: What I'm Learning
+    description: Document learning journey, technical deep-dives, aha moments, and knowledge synthesis. Teaching through learning.
+    percentage: 30
+    examples:
+      - "RAG systems: learned context window optimization from Denis Rothman's book"
+      - "Multi-agent orchestration patterns from building Content Engine"
+      - "Alembic migrations: discovered auto-generate doesn't catch everything"
+    characteristics:
+      - depth_over_breadth: "Focus on one concept deeply rather than surface survey"
+      - applied_learning: "Connect theory to actual implementation"
+      - teaching_back: "Feynman technique - explain clearly enough to teach others"
+    themes:
+      - books_reading
+      - courses_taking
+      - frameworks_learning
+      - aha_moments
+      - connecting_dots
+      - mistakes_to_insights
+
+  sales_tech:
+    name: Sales + Tech Intersection
+    description: How AI/tech improves sales performance, sales engineering insights, closing techniques enhanced by tools.
+    percentage: 20
+    examples:
+      - "Went from 5% to 40% close rate using AI-powered sales coaching"
+      - "Solutions engineering: translating technical features into business value"
+      - "Objection handling scripts generated from past winning calls"
+    characteristics:
+      - quantifiable_results: "Metrics, percentages, conversion rates"
+      - tool_application: "Specific tools/systems used, not vague productivity tips"
+      - business_value: "Revenue impact, time saved, deals closed"
+    themes:
+      - close_rate_improvements
+      - sales_engineering
+      - demo_automation
+      - objection_handling
+      - discovery_frameworks
+      - tool_building_for_sales
+
+  problem_solution:
+    name: Problem → Solution
+    description: Identify common pain points and provide specific, actionable solutions. The helpful expert content.
+    percentage: 15
+    examples:
+      - "Struggling with async Python? Here's how to debug race conditions"
+      - "LinkedIn posts feel generic? Use the STF framework for storytelling"
+      - "Context switching kills productivity: batching saved me 92 minutes/week"
+    characteristics:
+      - specific_problem: "Not 'productivity is hard' but 'context switching between 10 posts takes 2 hours'"
+      - actionable_solution: "Step-by-step, concrete, implementable today"
+      - proof_it_works: "Personal results, metrics, before/after"
+    themes:
+      - common_pain_points
+      - technical_debugging
+      - workflow_optimization
+      - tool_recommendations
+      - pattern_libraries
+      - anti_patterns_to_avoid
+
+distribution_rules:
+  weekly_minimum: 3
+  weekly_maximum: 7
+  ideal_weekly: 5
+  pillar_balance_window: weekly
+  description: "Track pillar distribution over rolling 7-day window, not per-post"
+
+validation:
+  check_pillar_balance:
+    description: "Warn if any pillar exceeds +10% or falls below -10% of target over 7 days"
+    severity: warning
+
+  check_pillar_drift:
+    description: "Error if any pillar exceeds +20% or falls below -20% over 30 days"
+    severity: error
+
+  min_posts_per_pillar:
+    description: "Each pillar should have at least 1 post per 2 weeks"
+    severity: warning
+
+content_principles:
+  - name: "Pillar determines framework choice"
+    description: "what_building → STF/SLA, what_learning → MRS/SLA, sales_tech → STF/PIF, problem_solution → STF/SLA"
+
+  - name: "Avoid pillar mixing in single post"
+    description: "Each post should clearly belong to ONE pillar for clarity and focus"
+
+  - name: "Rotate pillars over week"
+    description: "Don't cluster all what_building posts on Monday - distribute across week"
+
+  - name: "Pillar guides content depth"
+    description: "what_building = specific project details, what_learning = concept deep-dive, etc."
+
+examples:
+  balanced_week:
+    monday:
+      pillar: what_building
+      framework: STF
+      topic: "Shipped blueprint validation system"
+
+    tuesday:
+      pillar: what_learning
+      framework: MRS
+      topic: "Learned async context managers the hard way"
+
+    wednesday:
+      pillar: sales_tech
+      framework: STF
+      topic: "AI coach improved discovery call performance"
+
+    thursday:
+      pillar: what_building
+      framework: SLA
+      topic: "Refactored content generator for modularity"
+
+    friday:
+      pillar: problem_solution
+      framework: STF
+      topic: "Fix slow database queries with proper indexing"
+
+  poor_balance:
+    issue: "5 what_building posts, 0 sales_tech posts"
+    consequence: "Audience sees only building content, misses sales expertise"
+    fix: "Redistribute: 2 building, 1 learning, 1 sales, 1 problem-solution"
+
+metadata:
+  version: "1.0"
+  created_at: "2026-01-17"
+  platform: linkedin
+  author: "Content Engine - Phase 3"
