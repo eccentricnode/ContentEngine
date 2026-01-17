@@ -151,6 +151,30 @@ Context capture automatically:
 - Session history at `~/.claude/History/Sessions/` (optional)
 - Project notes at `~/Documents/Folio/1-Projects/` (optional)
 
+**LinkedIn Analytics Collection:**
+
+```bash
+# Collect analytics for all recent posts (last 7 days)
+uv run content-engine collect-analytics
+
+# Collect analytics for posts from last 14 days
+uv run content-engine collect-analytics --days-back 14
+
+# Test analytics for a single post
+uv run content-engine collect-analytics --test-post urn:li:share:7412668096475369472
+```
+
+Analytics collection automatically:
+1. Loads LinkedIn access token from environment (`LINKEDIN_ACCESS_TOKEN`) or database
+2. Fetches post metrics (impressions, likes, comments, shares, clicks, engagement rate)
+3. Updates `data/posts.jsonl` with fresh analytics
+4. Skips posts that already have metrics
+
+**Prerequisites for analytics collection:**
+- LinkedIn access token with analytics permissions
+- Set `LINKEDIN_ACCESS_TOKEN` environment variable OR store token in database
+- `data/posts.jsonl` file (create with `mkdir -p data && touch data/posts.jsonl`)
+
 **Content Engine CLI:**
 
 ```bash
