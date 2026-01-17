@@ -411,3 +411,58 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-009 - Create PIF.yaml framework blueprint
+
+**Implemented:**
+- Created blueprints/frameworks/linkedin/PIF.yaml with comprehensive Poll/Interactive framework
+- 4 sections: Hook, Interactive_Element, Context, Call_to_Action
+- Validation rules: 4 sections required, 300-1000 chars (shorter for engagement posts)
+- Compatible pillars: ALL four pillars (most versatile framework)
+- 3 detailed examples: poll format, open question, discussion prompt
+- Best practices, anti-patterns, voice guidelines
+- Added unique engagement_tactics section (PIF-specific)
+
+**Files changed:**
+- blueprints/frameworks/linkedin/PIF.yaml (new)
+- tests/test_pif_framework.py (new)
+
+**Learnings:**
+- PIF framework designed for maximum engagement/participation
+- Shorter char limits (300-1000) vs narrative frameworks (500-1500)
+- Engagement tactics are framework-specific (follow-through builds trust)
+- Interactive element must be specific and low-friction
+- Creating psychological safety encourages honest responses
+- PIF compatible with all pillars (engagement works across topics)
+
+**Codebase patterns discovered:**
+- Framework-specific fields (engagement_tactics) extend base structure
+- Compatible_pillars can include all four (PIF) or subset (MRS)
+- Character limits correlate with framework purpose (engagement vs narrative)
+- All four frameworks now complete: STF, MRS, SLA, PIF
+- Test count pattern: 10-12 tests per framework based on complexity
+
+**Tests:**
+- 12 comprehensive tests for PIF blueprint:
+  - YAML loading and caching
+  - Required fields (including engagement_tactics)
+  - Section structure (4 sections: Hook/Interactive/Context/CTA)
+  - Section details validation
+  - Validation rules
+  - Compatible pillars (all 4)
+  - Examples structure (3 examples)
+  - Best practices/anti-patterns
+  - Voice guidelines
+  - Engagement tactics
+  - Description content check
+- pytest: PASS (145 total tests, 12 new)
+- ruff: PASS
+- mypy: Pre-existing errors only
+
+**Manual testing:**
+- uv run content-engine blueprints list --category frameworks ✓
+- Shows all four frameworks: MRS, PIF, SLA, STF ✓
+
+**Commit:** ed1f3b4
+
+---
+
