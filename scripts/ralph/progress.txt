@@ -1126,3 +1126,63 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-022 - Implement post_validator.py
+
+**Implemented:**
+- Created agents/linkedin/post_validator.py with comprehensive post validation system
+- Severity enum: ERROR (must fix), WARNING (should fix), SUGGESTION (optional)
+- Violation dataclass with category, message, and suggestion
+- ValidationReport dataclass with errors/warnings/suggestions properties
+- validate_post(post, framework) validates against all constraints
+- _validate_framework_structure() checks character limits and section counts
+- _validate_brand_voice() detects forbidden phrases and red/yellow flags
+- _validate_platform_rules() enforces LinkedIn-specific formatting rules
+- _calculate_score() computes quality score (0.0-1.0) based on violation severity
+- 30 comprehensive tests covering all validation paths
+
+**Files changed:**
+- agents/linkedin/post_validator.py (new - 421 lines)
+- tests/test_post_validator.py (new - 30 tests)
+- scripts/ralph/prd.json (updated CE-BP-022 passes: true)
+
+**Learnings:**
+- SQLAlchemy Column types require type: ignore comments for mypy
+- PlatformRules.yaml uses "formatting_rules" not "formatting" for LinkedIn
+- Red flags in YAML use exact strings like "Walls of text" (plural)
+- Validation severity levels create graduated feedback (ERROR > WARNING > SUGGESTION)
+- Score calculation: 1.0 - (errors * 0.20) - (warnings * 0.05) - (suggestions * 0.02)
+- ValidationReport properties (errors, warnings, suggestions) filter violations list
+- Platform rules check emoji count using Unicode range detection (ord(char) > 0x1F300)
+- Wall of text detection: split by "\n\n", check if any paragraph > 300 chars
+- All caps detection: > 20% of words are all uppercase
+
+**Codebase patterns discovered:**
+- Violation dataclass bundles severity, category, message, suggestion
+- ValidationReport provides is_valid (no errors), score (0-1), and filtered violation lists
+- Three-tier validation: framework structure → brand voice → platform rules
+- Each validation function returns list[Violation] for composability
+- Score calculation uses weighted penalties (errors hurt most, suggestions least)
+- type: ignore[arg-type] needed for SQLAlchemy Column → str conversions
+- Platform rules YAML structure: character_limits, formatting_rules, red_flags
+
+**Tests:**
+- 30 comprehensive tests covering:
+  - ValidationReport dataclass and properties
+  - Full validate_post() workflow (valid/invalid/too short/too long)
+  - Framework structure validation (char limits, section counts)
+  - Brand voice validation (forbidden phrases, red/yellow flags, first-person)
+  - Platform rules validation (optimal length, line breaks, emojis, hashtags, walls, caps)
+  - Score calculation (perfect, errors, warnings, suggestions, mixed, minimum)
+  - Integration tests (full workflow, multiple frameworks)
+- pytest: PASS (338 total tests, 30 new)
+- ruff: PASS (clean code, no warnings)
+- mypy: PASS (all type hints correct)
+
+**Manual testing:**
+- Not yet CLI-integrated (next story: CE-BP-024 adds validate CLI command)
+- Validation logic ready for integration into content_generator iterative refinement (CE-BP-023)
+
+**Commit:** (pending)
+
+---
+
