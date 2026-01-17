@@ -309,3 +309,54 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-007 - Create MRS.yaml framework blueprint
+
+**Implemented:**
+- Created blueprints/frameworks/linkedin/MRS.yaml with comprehensive MRS framework
+- 3 sections: Mistake, Realization, Shift (vulnerability-driven narrative)
+- Validation rules: 3 sections required, 500-1300 chars
+- Compatible pillars: what_learning, problem_solution, sales_tech
+- 2 detailed examples showing vulnerability and growth
+- Best practices, anti-patterns, and voice guidelines
+
+**Files changed:**
+- blueprints/frameworks/linkedin/MRS.yaml (new)
+- tests/test_mrs_framework.py (new)
+
+**Learnings:**
+- MRS framework emphasizes personal vulnerability and authenticity
+- Causal chain (Mistake → Realization → Shift) is critical structure
+- Examples should show both the struggle and the transformation
+- Anti-patterns help prevent humble-bragging disguised as vulnerability
+- Voice guidelines emphasize honesty without self-deprecation
+
+**Codebase patterns discovered:**
+- Framework differences: MRS focuses on personal growth vs STF on problem-solving
+- Shorter min/max chars for MRS (500-1300) vs STF (600-1500)
+- Compatible pillars vary by framework nature (MRS excludes what_building)
+- Test pattern established: 10-11 tests per framework blueprint
+
+**Tests:**
+- 11 comprehensive tests for MRS blueprint:
+  - YAML loading and caching
+  - Required fields validation
+  - Section structure (3 sections: Mistake/Realization/Shift)
+  - Section details validation
+  - Validation rules
+  - Compatible pillars
+  - Examples structure
+  - Best practices/anti-patterns
+  - Voice guidelines
+  - Description content check
+- pytest: PASS (122 total tests, 11 new)
+- ruff: PASS (Python test file clean)
+- mypy: Pre-existing errors only
+
+**Manual testing:**
+- uv run content-engine blueprints list --category frameworks ✓
+- Shows both linkedin/MRS and linkedin/STF ✓
+
+**Commit:** e8e894d
+
+---
+
