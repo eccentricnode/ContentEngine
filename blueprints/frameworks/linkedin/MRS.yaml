@@ -1,0 +1,89 @@
+name: MRS
+platform: linkedin
+description: Mistake-Realization-Shift Framework - Vulnerability-driven narrative showing personal growth
+type: framework
+
+structure:
+  sections:
+    - name: Mistake
+      description: The error, bad assumption, or wrong approach you took
+      guidelines:
+        - Own it completely - no excuses or blame-shifting
+        - Be specific about what you did wrong
+        - Show the impact of the mistake
+        - Make it relatable - others likely made similar mistakes
+        - Vulnerability builds trust and engagement
+
+    - name: Realization
+      description: The moment you understood what was actually wrong
+      guidelines:
+        - What triggered the insight?
+        - Often comes from failure, feedback, or data
+        - Show the "aha moment" - make it visceral
+        - Contrast with previous understanding
+        - This is the turning point of the story
+
+    - name: Shift
+      description: How you changed your approach and what resulted
+      guidelines:
+        - Concrete actions you took differently
+        - New mental model or framework you adopted
+        - Measurable results or observable changes
+        - What you do now vs what you did before
+        - Make it actionable for readers
+
+validation:
+  min_sections: 3
+  max_sections: 3
+  min_chars: 500
+  max_chars: 1300
+  required_elements:
+    - All three sections must be present
+    - Clear causal chain (Mistake → Realization → Shift)
+    - Personal vulnerability and authenticity
+    - Specific examples (not generic "I was wrong about X")
+
+compatible_pillars:
+  - what_learning
+  - problem_solution
+  - sales_tech
+
+examples:
+  - title: "I Thought More Features = More Sales (I Was Wrong)"
+    mistake: "Built my first SaaS with 47 features. Thought comprehensive = valuable. Spent 8 months. Launched to crickets. 3 signups, all friends who felt bad for me."
+    realization: "Customer interview #23 changed everything. User said: 'I don't need 47 features. I need ONE thing that solves my actual problem perfectly.' Realized I was building what I thought was impressive, not what they needed."
+    shift: "Next product: one feature. Did it exceptionally well. Talked to 50 users BEFORE writing code. Validated the pain was real. MVP took 3 weeks. Got 100 signups in first month. Now I kill features aggressively."
+
+  - title: "Why I Stopped Working 80-Hour Weeks"
+    mistake: "Thought grinding harder = success. Worked 80-hour weeks for 2 years. Wore it like a badge of honor. My close rate was 5%. I was exhausted, burned out, relationships suffering."
+    realization: "My best month ever? I was sick, worked 20 hours total. Close rate was 15%. Realized I wasn't being productive, I was being busy. The work that mattered took 4 hours/day, not 16."
+    shift: "Cut to 6-hour focused workdays. Eliminated meetings that didn't drive revenue. Built systems to handle repetitive tasks. Close rate went to 40%. Revenue doubled. Actually have a life now."
+
+best_practices:
+  - Lead with vulnerability - admit the mistake upfront
+  - Use "I thought X, but Y" structure to show contrast
+  - Quantify impact when possible (numbers make it real)
+  - Make the mistake relatable (most people made similar errors)
+  - Show the realization came from data/feedback, not just gut
+  - Shift should be specific actions, not vague intentions
+  - End with what you do now vs what you did then
+  - Keep it conversational and authentic
+
+anti_patterns:
+  - Humble-bragging disguised as vulnerability ("My only mistake was working TOO hard")
+  - Blaming others for the mistake (own it completely)
+  - Vague mistakes ("I wasn't strategic enough" - too generic)
+  - Missing the emotional impact of the mistake
+  - Realization that comes from nowhere (show the trigger)
+  - Shift that's just theory, not actual practice
+  - Preachy tone (share your journey, don't lecture)
+  - Making it about how smart you are now
+
+voice_guidelines:
+  - First-person narrative ("I", "my")
+  - Honest and vulnerable without self-deprecation
+  - Show growth, not perfection
+  - Conversational tone (like telling a friend)
+  - Specific details make it credible
+  - Balance humility with confidence in the shift
+  - Make it about the lesson, not the ego
