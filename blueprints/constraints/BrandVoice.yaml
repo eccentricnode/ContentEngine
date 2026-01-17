@@ -1,0 +1,176 @@
+name: BrandVoice
+type: constraint
+description: Austin's brand voice characteristics and content constraints
+platform: linkedin
+
+characteristics:
+  - id: technical_but_accessible
+    description: Technical depth without jargon walls
+    examples:
+      - "Built a RAG system using Anthropic's API (good - specific tech, clear purpose)"
+      - "Leveraged synergistic AI paradigms (bad - jargon without substance)"
+    guidelines:
+      - Use specific technology names (Python, Claude API, PostgreSQL)
+      - Explain technical concepts in plain language
+      - Assume audience is smart but not necessarily in your exact domain
+      - Tech details support the point, don't obscure it
+
+  - id: authentic
+    description: Real experiences over generic advice
+    examples:
+      - "I failed 3 times before this approach worked (good - vulnerable, specific)"
+      - "Success comes to those who persevere (bad - platitude, no substance)"
+    guidelines:
+      - Share actual numbers and results when possible
+      - Admit mistakes and struggles openly
+      - No humble-bragging disguised as vulnerability
+      - Specific stories over vague principles
+      - Show the work, not just the win
+
+  - id: confident
+    description: Authoritative without arrogance
+    examples:
+      - "This approach increased my close rate from 5% to 40% (good - direct, backed by data)"
+      - "I'm the best sales engineer you'll ever meet (bad - arrogant, unsubstantiated)"
+    guidelines:
+      - State your results directly
+      - Back claims with evidence (numbers, examples, outcomes)
+      - Share what worked without belittling other approaches
+      - Confident in the data, humble about the journey
+      - Make it about the method, not the ego
+
+  - id: builder_mindset
+    description: Focus on building and shipping, not just consuming
+    examples:
+      - "Built this in one evening using Claude Code (good - maker, specific timeframe)"
+      - "Been thinking about building an AI agent someday (bad - passive, no action)"
+    guidelines:
+      - Emphasize building over theorizing
+      - Share what you shipped, not just what you learned
+      - Action-oriented language (built, shipped, tested, deployed)
+      - Bias toward doing over planning
+      - Show progress, not just potential
+
+  - id: specificity_over_generic
+    description: Concrete details and examples, not vague advice
+    examples:
+      - "Went from 5% to 40% close rate in 3 months using AI call analysis (good - specific numbers, method, timeline)"
+      - "AI can really improve your sales performance (bad - vague, no actionable detail)"
+    guidelines:
+      - Always include numbers when available
+      - Name specific tools, frameworks, approaches
+      - Give timeframes (how long did it take?)
+      - Concrete examples over abstract principles
+      - Make it specific enough to be falsifiable
+
+forbidden_phrases:
+  corporate_jargon:
+    - "leverage synergies"
+    - "move the needle"
+    - "circle back"
+    - "touch base"
+    - "low-hanging fruit"
+    - "think outside the box"
+    - "at the end of the day"
+    - "deep dive"
+    - "game changer"
+    - "disrupt"
+    - "disruption"
+
+  hustle_culture:
+    - "rise and grind"
+    - "no days off"
+    - "sleep when you're dead"
+    - "hustle harder"
+    - "grindset"
+    - "no excuses"
+    - "beast mode"
+    - "crushing it"
+
+  empty_motivational:
+    - "you got this"
+    - "believe in yourself"
+    - "never give up"
+    - "chase your dreams"
+    - "manifest your destiny"
+    - "stay positive"
+    - "good vibes only"
+    - "everything happens for a reason"
+
+  vague_business_speak:
+    - "optimize workflows"
+    - "streamline processes"
+    - "maximize efficiency"
+    - "drive results"
+    - "best practices"
+    - "world-class"
+    - "cutting-edge"
+    - "next-level"
+
+style_rules:
+  narrative_voice:
+    - First-person ("I", "my", "we") - never third person
+    - Past tense for stories (what happened)
+    - Present tense for current state/lessons
+    - Active voice over passive ("I built" not "was built by me")
+
+  structure:
+    - Short paragraphs (2-3 sentences max)
+    - Line breaks for visual breathing room
+    - Numbers and data points for credibility
+    - Conversational rhythm (like talking to a smart friend)
+    - Hook in first 1-2 sentences
+
+  tone:
+    - Direct and clear
+    - Honest about struggles
+    - Excited about building
+    - Respectful of reader's time
+    - No preaching or lecturing
+    - Share journey, don't sell
+
+  technical_communication:
+    - Specific > Generic always
+    - Show the "why" behind tech choices
+    - Explain acronyms on first use (if needed)
+    - Code is fine, but explain what it does
+    - Architecture matters, implementation details less so
+
+content_principles:
+  - Build in public - share the process, not just results
+  - Teach by showing, not just telling
+  - Vulnerability builds trust (admit mistakes)
+  - Data over opinions (numbers tell the story)
+  - Action over advice (what you built > what you think)
+  - Specificity over scale (one deep example > ten shallow ones)
+  - Reader value first (what can they use?)
+  - Honesty over polish (real beats perfect)
+
+validation_flags:
+  red_flags:
+    - Contains forbidden phrases
+    - Generic advice without specific example
+    - Humble-bragging ("my only mistake was caring too much")
+    - Third-person voice
+    - No numbers or concrete details
+    - Preachy or lecturing tone
+    - Corporate jargon
+
+  yellow_flags:
+    - Passive voice overuse
+    - Paragraphs longer than 3 sentences
+    - No line breaks
+    - Vague timeframes ("recently", "a while ago")
+    - Missing "why" behind decisions
+    - Too much theory, not enough practice
+    - Hedging language ("maybe", "might", "possibly")
+
+  green_signals:
+    - Specific numbers and results
+    - Personal story with vulnerability
+    - Technical details with context
+    - Action-oriented language
+    - Clear value for reader
+    - First-person narrative
+    - Confident but humble
+    - Builds credibility through specificity
