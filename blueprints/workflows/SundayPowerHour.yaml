@@ -1,0 +1,228 @@
+name: SundayPowerHour
+description: Weekly batching workflow for generating 10 LinkedIn posts in one focused session
+platform: linkedin
+frequency: weekly
+target_output: 10
+
+# Batching benefits
+benefits:
+  context_switching_savings: 92 minutes per week
+  explanation: |
+    Traditional approach: 10 sessions × 10 min context switching = 100 min
+    Batching approach: 1 session × 8 min = 8 min
+    Net savings: 92 minutes per week
+  additional_benefits:
+    - Deeper creative flow state
+    - Consistent brand voice across week's content
+    - Strategic distribution across content pillars
+    - Front-loaded week with completed drafts
+
+# Workflow steps
+steps:
+  - id: context_mining
+    name: Context Mining
+    duration_minutes: 15
+    description: Extract themes, decisions, and progress from the past week's work
+    inputs:
+      - Last 7 days of session history
+      - Project notes from active projects
+      - Previous week's content performance (if available)
+    outputs:
+      - List of 15-20 potential content ideas
+      - Key themes from the week
+      - Important decisions made
+      - Progress achieved
+    prompt_template: |
+      Analyze the following context from the past week and extract content ideas:
+
+      ## Sessions Summary
+      {{#sessions}}
+      - {{date}}: {{topics}}
+      {{/sessions}}
+
+      ## Projects
+      {{#projects}}
+      - {{name}}: {{status}}
+      {{/projects}}
+
+      Generate 15-20 LinkedIn post ideas based on:
+      1. What you built or shipped
+      2. What you learned
+      3. Problems you solved
+      4. Decisions you made
+
+      For each idea, provide:
+      - Title (5-8 words)
+      - Core insight (1 sentence)
+      - Potential hook (1 sentence)
+      - Estimated value to audience (low/medium/high)
+
+      Output as JSON array with these fields: title, insight, hook, value
+
+  - id: pillar_categorization
+    name: Pillar Categorization
+    duration_minutes: 10
+    description: Categorize ideas into content pillars and select top 10
+    inputs:
+      - 15-20 content ideas from context mining
+      - ContentPillars constraint (35% building, 30% learning, 20% sales_tech, 15% problem_solution)
+    outputs:
+      - 10 selected ideas distributed across pillars
+      - Pillar assignment for each idea
+      - Rationale for distribution
+    prompt_template: |
+      Given these content ideas and pillar distribution targets:
+
+      ## Ideas
+      {{#ideas}}
+      {{id}}. {{title}} - {{insight}}
+      {{/ideas}}
+
+      ## Pillar Distribution Targets
+      - what_building: 35% (3-4 posts)
+      - what_learning: 30% (3 posts)
+      - sales_tech: 20% (2 posts)
+      - problem_solution: 15% (1-2 posts)
+
+      Select the top 10 ideas and assign to pillars following the distribution.
+      Prioritize ideas with "high" value to audience.
+
+      Output as JSON array with: id, title, pillar, value, reasoning
+
+  - id: framework_selection
+    name: Framework Selection
+    duration_minutes: 5
+    description: Select appropriate framework for each post based on pillar and content type
+    inputs:
+      - 10 categorized ideas with pillar assignments
+      - Framework blueprints (STF, MRS, SLA, PIF)
+    outputs:
+      - Framework assigned to each post
+      - Structure preview for each post
+    prompt_template: |
+      For each post idea, select the best framework:
+
+      {{#posts}}
+      {{id}}. {{title}} ({{pillar}})
+      {{/posts}}
+
+      ## Framework Guidelines
+      - STF (Story-Tried-Failed): Problem-solving narratives, what you built
+      - MRS (Mistake-Realization-Shift): Learning from failures, growth stories
+      - SLA (Story-Lesson-Application): Teaching through experience
+      - PIF (Poll/Interactive): Engagement posts, questions, polls
+
+      ## Pillar-Framework Mapping
+      - what_building → STF or SLA
+      - what_learning → MRS or SLA
+      - sales_tech → STF or PIF
+      - problem_solution → STF or MRS
+
+      For each post, output: id, framework, structure_preview (2-3 sentences)
+
+  - id: batch_writing
+    name: Batch Writing
+    duration_minutes: 60
+    description: Generate all 10 posts in deep focus session
+    inputs:
+      - 10 posts with pillar and framework assignments
+      - Last 7 days of daily context
+      - BrandVoice constraint
+    outputs:
+      - 10 draft posts (DRAFT status)
+      - Validation scores for each
+      - List of posts needing revision
+    process:
+      - For each post in order
+      - Load appropriate framework and pillar context
+      - Generate post using template and LLM
+      - Validate against constraints
+      - Save as DRAFT with metadata
+      - Track validation scores
+    prompt_template: |
+      Generate LinkedIn post following this framework:
+
+      ## Post Details
+      Title: {{title}}
+      Pillar: {{pillar_name}}
+      Framework: {{framework_name}}
+
+      ## Context
+      {{#context_themes}}
+      - {{.}}
+      {{/context_themes}}
+
+      ## Framework Structure
+      {{#framework_sections}}
+      {{name}}: {{description}}
+      {{/framework_sections}}
+
+      ## Brand Voice
+      {{#brand_characteristics}}
+      - {{name}}: {{description}}
+      {{/brand_characteristics}}
+
+      Avoid: {{#forbidden_phrases}}{{.}}, {{/forbidden_phrases}}
+
+      Generate a complete LinkedIn post following the framework structure.
+
+  - id: polish_and_schedule
+    name: Polish & Schedule
+    duration_minutes: 10
+    description: Review validation scores, polish weak posts, create schedule
+    inputs:
+      - 10 draft posts with validation scores
+      - Posts flagged for revision
+    outputs:
+      - 10 polished posts ready for approval
+      - Suggested posting schedule (Mon-Fri, 2x per day)
+      - Summary report with metrics
+    prompt_template: |
+      Review these posts and suggest improvements:
+
+      {{#posts}}
+      ## Post {{id}} (Score: {{validation_score}})
+      {{content_preview}}
+
+      Violations: {{#violations}}{{.}}{{/violations}}
+      {{/posts}}
+
+      For posts with score < 0.8:
+      - Identify specific weaknesses
+      - Suggest concrete improvements
+      - Provide revised version if needed
+
+      Also suggest posting schedule:
+      - Mon-Fri distribution
+      - 2 posts per day (morning/afternoon)
+      - Balance pillars throughout week
+
+# Metadata
+estimated_total_duration: 100
+difficulty: intermediate
+prerequisites:
+  - Active session history (7 days)
+  - Ollama running locally
+  - At least 5 themes/decisions from the week
+success_criteria:
+  - 10 posts generated
+  - Average validation score > 0.8
+  - All 4 pillars represented
+  - Posts ready for approval/scheduling
+
+# Example output structure
+example_output:
+  posts_generated: 10
+  distribution:
+    what_building: 4
+    what_learning: 3
+    sales_tech: 2
+    problem_solution: 1
+  frameworks_used:
+    STF: 4
+    MRS: 3
+    SLA: 2
+    PIF: 1
+  average_validation_score: 0.87
+  posts_needing_revision: 2
+  estimated_approval_time: 20 minutes
