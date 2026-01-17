@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Optional
 
 import click
+import yaml
 from sqlalchemy import select
 
 from lib.context_capture import read_project_notes, read_session_history
@@ -12,7 +13,7 @@ from lib.context_synthesizer import save_context, synthesize_daily_context
 from lib.database import init_db, get_db, Post, PostStatus, Platform, OAuthToken, ContentPlan, ContentPlanStatus
 from lib.errors import AIError
 from lib.logger import setup_logger
-from lib.blueprint_loader import list_blueprints
+from lib.blueprint_loader import list_blueprints, load_framework, load_workflow, load_constraints
 from lib.blueprint_engine import execute_workflow
 from agents.linkedin.post import post_to_linkedin
 from agents.linkedin.content_generator import generate_post
@@ -368,6 +369,132 @@ def list_blueprints_cmd(category: Optional[str]) -> None:
     except Exception as e:
         click.echo(f"❌ Failed to list blueprints: {e}")
         logger.exception("Blueprint listing failed")
+        sys.exit(1)
+
+
+@blueprints.command("show")
+@click.argument("blueprint_name")
+@click.option(
+    "--platform",
+    type=str,
+    default="linkedin",
+    help="Platform for framework blueprints (default: linkedin)",
+)
+def show_blueprint(blueprint_name: str, platform: str) -> None:
+    """Show detailed blueprint information.
+
+    Display the full blueprint structure including validation rules,
+    sections, examples, and best practices.
+
+    Examples:
+        uv run content-engine blueprints show STF
+        uv run content-engine blueprints show BrandVoice
+        uv run content-engine blueprints show SundayPowerHour
+    """
+    try:
+        # Try loading as framework first (with platform)
+        blueprint = None
+        blueprint_type = None
+
+        try:
+            blueprint = load_framework(blueprint_name, platform)
+            blueprint_type = "Framework"
+        except FileNotFoundError:
+            pass
+
+        # Try loading as workflow
+        if blueprint is None:
+            try:
+                blueprint = load_workflow(blueprint_name)
+                blueprint_type = "Workflow"
+            except FileNotFoundError:
+                pass
+
+        # Try loading as constraint
+        if blueprint is None:
+            try:
+                blueprint = load_constraints(blueprint_name)
+                blueprint_type = "Constraint"
+            except FileNotFoundError:
+                pass
+
+        # If still not found, error
+        if blueprint is None:
+            click.echo(click.style(f"\n❌ Blueprint '{blueprint_name}' not found", fg="red"))
+            click.echo("\nTry: uv run content-engine blueprints list")
+            sys.exit(1)
+
+        # Print header
+        click.echo(f"\n{'='*60}")
+        click.echo(click.style(f"{blueprint_type}: {blueprint_name}", fg="cyan", bold=True))
+        if blueprint_type == "Framework":
+            click.echo(f"Platform: {platform}")
+        click.echo(f"{'='*60}\n")
+
+        # Print formatted YAML
+        yaml_output = yaml.dump(blueprint, default_flow_style=False, sort_keys=False)
+        click.echo(yaml_output)
+
+        # Print footer with helpful info
+        click.echo(f"{'='*60}\n")
+
+        if blueprint_type == "Framework":
+            sections = blueprint.get("structure", {}).get("sections", [])
+            click.echo(click.style("📐 Structure:", fg="blue", bold=True))
+            click.echo(f"   Sections: {len(sections)}")
+            if sections:
+                for section in sections:
+                    section_name = section.get("id", "unknown")
+                    click.echo(f"      • {section_name}")
+
+            validation = blueprint.get("validation", {})
+            if validation:
+                click.echo(click.style("\n✓ Validation Rules:", fg="blue", bold=True))
+                if "min_chars" in validation:
+                    click.echo(f"   Min characters: {validation['min_chars']}")
+                if "max_chars" in validation:
+                    click.echo(f"   Max characters: {validation['max_chars']}")
+                if "min_sections" in validation:
+                    click.echo(f"   Min sections: {validation['min_sections']}")
+
+            examples = blueprint.get("examples", [])
+            if examples:
+                click.echo(click.style(f"\n📝 Examples: {len(examples)} provided", fg="blue", bold=True))
+
+        elif blueprint_type == "Workflow":
+            steps = blueprint.get("steps", [])
+            click.echo(click.style("🔄 Workflow Steps:", fg="blue", bold=True))
+            click.echo(f"   Total: {len(steps)}")
+            total_duration = sum(step.get("duration_minutes", 0) for step in steps)
+            click.echo(f"   Duration: {total_duration} minutes")
+            for i, step in enumerate(steps, 1):
+                step_name = step.get("name", "unknown")
+                duration = step.get("duration_minutes", 0)
+                click.echo(f"      {i}. {step_name} ({duration}min)")
+
+        elif blueprint_type == "Constraint":
+            if "characteristics" in blueprint:
+                chars = blueprint["characteristics"]
+                click.echo(click.style(f"⚡ Characteristics: {len(chars)}", fg="blue", bold=True))
+
+            if "pillars" in blueprint:
+                pillars = blueprint["pillars"]
+                click.echo(click.style(f"\n📊 Pillars: {len(pillars)}", fg="blue", bold=True))
+                for pillar_id, pillar_data in pillars.items():
+                    percentage = pillar_data.get("percentage", 0)
+                    name = pillar_data.get("name", pillar_id)
+                    click.echo(f"      • {name}: {percentage}%")
+
+            if "forbidden_phrases" in blueprint:
+                categories = blueprint["forbidden_phrases"]
+                total_phrases = sum(len(phrases) for phrases in categories.values())
+                click.echo(click.style(f"\n🚫 Forbidden Phrases: {total_phrases} total", fg="blue", bold=True))
+
+        click.echo()
+
+    except Exception as e:
+        click.echo(click.style(f"\n❌ Failed to show blueprint: {e}", fg="red"))
+        logger.exception("Blueprint show failed")
         sys.exit(1)
 
 
