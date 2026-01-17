@@ -3,8 +3,10 @@
 from dataclasses import dataclass
 from typing import Any
 
-from lib.blueprint_engine import select_framework, validate_content
+from agents.linkedin.post_validator import Severity, validate_post
+from lib.blueprint_engine import select_framework
 from lib.blueprint_loader import load_constraints, load_framework
+from lib.database import Post
 from lib.errors import AIError
 from lib.ollama import OllamaClient
 from lib.template_renderer import render_template
@@ -91,25 +93,38 @@ def generate_post(
             # If refinement fails, return best attempt so far
             break
 
-        # Validate generated content
-        validation = validate_content(generated, framework, "linkedin")
+        # Validate generated content using comprehensive post validator
+        # Create temporary Post object for validation
+        temp_post = Post(id=0, content=generated)
+        validation_report = validate_post(temp_post, framework=framework)
+
+        # Extract violation messages for feedback (errors and warnings only)
+        current_violations = [
+            f"{v.severity.upper()}: {v.message}"
+            + (f" (Suggestion: {v.suggestion})" if v.suggestion else "")
+            for v in validation_report.violations
+            if v.severity in (Severity.ERROR, Severity.WARNING)
+        ]
 
         # Track best attempt
-        if validation.score > best_score:
+        if validation_report.score > best_score:
             best_content = generated
-            best_score = validation.score
-            violations = validation.violations
+            best_score = validation_report.score
+            violations = current_violations
 
-        # If valid, we're done
-        if validation.is_valid:
+        # If valid (no errors), we're done
+        if validation_report.is_valid:
             return GenerationResult(
                 content=generated,
                 framework_used=framework,
-                validation_score=validation.score,
+                validation_score=validation_report.score,
                 is_valid=True,
                 iterations=iteration + 1,
                 violations=[],
             )
+
+        # Update violations for next iteration
+        violations = current_violations
 
     # Return best attempt (may not be fully valid)
     return GenerationResult(

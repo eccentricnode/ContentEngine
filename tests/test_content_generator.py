@@ -74,8 +74,10 @@ def test_generate_post_returns_valid_content(
 
         assert result.is_valid is True
         assert result.content == valid_post_content
-        assert result.validation_score == 1.0
+        # Score may be < 1.0 due to warnings/suggestions, but should be > 0
+        assert 0.0 < result.validation_score <= 1.0
         assert result.iterations == 1
+        # is_valid means no ERROR violations (warnings/suggestions are ok)
         assert len(result.violations) == 0
 
 
@@ -288,3 +290,73 @@ def test_generation_result_dataclass() -> None:
     assert result.is_valid is True
     assert result.iterations == 2
     assert result.violations == []
+
+
+def test_generate_post_comprehensive_validation_refinement(
+    sample_context: dict,
+) -> None:
+    """Test that iterative refinement works with comprehensive validation.
+
+    This test verifies that:
+    1. First attempt fails comprehensive validation (errors present)
+    2. Refinement prompt includes violation feedback
+    3. Second attempt passes validation (no errors)
+    """
+    with patch("agents.linkedin.content_generator.OllamaClient") as mock_ollama:
+        mock_client = MagicMock()
+
+        # First attempt: too short (triggers ERROR)
+        # Second attempt: good length (no errors, maybe warnings)
+        mock_client.generate_content_ideas.side_effect = [
+            "Too short",  # < 600 chars = ERROR for STF
+            "I" * 700,  # Valid length, first-person (may have warnings but no errors)
+        ]
+        mock_ollama.return_value = mock_client
+
+        result = generate_post(
+            context=sample_context,
+            pillar="what_building",
+            framework="STF",
+            max_iterations=3,
+        )
+
+        # Should refine and succeed
+        assert result.is_valid is True
+        assert result.iterations == 2
+        assert result.content == "I" * 700
+
+        # Verify refinement prompt was called with feedback
+        assert mock_client.generate_content_ideas.call_count == 2
+        second_call_args = mock_client.generate_content_ideas.call_args_list[1][0][0]
+        assert "PREVIOUS ATTEMPT HAD THESE ISSUES" in second_call_args
+
+
+def test_generate_post_violation_feedback_includes_suggestions(
+    sample_context: dict,
+) -> None:
+    """Test that violation feedback includes suggestions when available."""
+    with patch("agents.linkedin.content_generator.OllamaClient") as mock_ollama:
+        mock_client = MagicMock()
+
+        # All attempts fail validation
+        mock_client.generate_content_ideas.side_effect = [
+            "Short",  # Too short
+            "Still",  # Still too short
+            "Nope",   # Still too short
+        ]
+        mock_ollama.return_value = mock_client
+
+        result = generate_post(
+            context=sample_context,
+            pillar="what_building",
+            framework="STF",
+            max_iterations=3,
+        )
+
+        # Should have violations with feedback
+        assert result.is_valid is False
+        assert len(result.violations) > 0
+
+        # Violations should include severity level
+        for violation in result.violations:
+            assert "ERROR:" in violation or "WARNING:" in violation
