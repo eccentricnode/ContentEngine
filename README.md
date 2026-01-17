@@ -226,6 +226,27 @@ uv run content-engine collect-analytics --test-post urn:li:share:741266809647536
 uv run content-engine collect-analytics
 ```
 
+**Analytics Dashboard:**
+
+View analytics summary and identify best/worst performing posts:
+
+```bash
+# Display analytics dashboard in terminal
+python scripts/analytics_dashboard.py
+
+# Export analytics to CSV
+python scripts/analytics_dashboard.py --export-csv results.csv
+```
+
+Dashboard displays:
+- Summary table with post ID, date, engagement rate, likes, and comments
+- Average engagement rate across all posts
+- Best performing post (highest engagement)
+- Worst performing post (lowest engagement)
+- Works gracefully with missing metrics (prompts to run collect-analytics)
+
+CSV export includes all metrics (impressions, likes, comments, shares, clicks, engagement_rate, fetched_at) for further analysis in spreadsheet tools.
+
 **Content Engine CLI:**
 
 ```bash
