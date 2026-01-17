@@ -580,3 +580,52 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-012 - Implement blueprint_engine.py with validation
+
+**Implemented:**
+- Created lib/blueprint_engine.py with core validation engine
+- validate_content(content, framework, platform) validates against framework + brand voice
+- check_brand_voice(content) detects forbidden phrases from BrandVoice constraint
+- select_framework(pillar, context) chooses appropriate framework based on pillar + context
+- ValidationResult dataclass with is_valid, violations, warnings, suggestions, score
+
+**Files changed:**
+- lib/blueprint_engine.py (new)
+- tests/test_blueprint_engine.py (new)
+- scripts/ralph/prd.json (updated CE-BP-012 passes: true)
+
+**Learnings:**
+- Validation combines framework structure checks + brand voice constraints
+- Score calculation: 1.0 - (violations * 0.2) - (warnings * 0.05)
+- Framework selection uses default mapping + context-aware overrides
+- Default mapping: what_building→STF, what_learning→MRS, sales_tech→STF, problem_solution→STF
+- Context keywords override defaults: poll/question→PIF, mistake/failed→MRS
+- Forbidden phrases match must be exact (case-insensitive) from YAML
+- BrandVoice has 4 categories of forbidden phrases: corporate_jargon, hustle_culture, empty_motivational, vague_business_speak
+
+**Codebase patterns discovered:**
+- ValidationResult dataclass provides structured validation output
+- Violations are errors (must fix), warnings are suggestions (should fix)
+- Score 0.0-1.0 indicates content quality (1.0 = perfect)
+- Brand voice checking iterates through forbidden phrase categories
+- Framework selection can be overridden by context keywords
+- Case-insensitive matching for forbidden phrases using .lower()
+
+**Tests:**
+- 22 comprehensive tests for blueprint_engine:
+  - validate_content with all 4 frameworks
+  - Character length validation (min/max from YAML)
+  - Score calculation and suggestions
+  - Brand voice forbidden phrase detection (single/multiple)
+  - Case-insensitive matching
+  - Framework selection for all 4 pillars
+  - Context-based framework overrides
+  - ValidationResult dataclass structure
+- pytest: PASS (188 total tests, 22 new)
+- ruff: PASS (removed unused variable)
+- mypy: PASS
+
+**Commit:** 31134be
+
+---
+
