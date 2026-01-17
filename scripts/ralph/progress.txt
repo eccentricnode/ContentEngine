@@ -360,3 +360,54 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-008 - Create SLA.yaml framework blueprint
+
+**Implemented:**
+- Created blueprints/frameworks/linkedin/SLA.yaml with comprehensive SLA framework
+- 3 sections: Story, Lesson, Application (narrative teaching format)
+- Validation rules: 3 sections required, 500-1400 chars
+- Compatible pillars: what_learning, what_building, sales_tech
+- 2 detailed examples with concrete stories and actionable applications
+- Best practices, anti-patterns, and voice guidelines
+
+**Files changed:**
+- blueprints/frameworks/linkedin/SLA.yaml (new)
+- tests/test_sla_framework.py (new)
+
+**Learnings:**
+- SLA framework balances storytelling with actionable takeaways
+- Story section needs specific details and stakes to be engaging
+- Lesson must feel earned from the story (not tacked on)
+- Application section requires numbered, concrete steps
+- Voice shifts between sections: narrative (story) → clear (lesson) → practical (application)
+
+**Codebase patterns discovered:**
+- All three frameworks now follow consistent YAML structure
+- Test pattern standardized: 11 tests per framework
+- Compatible pillars vary: SLA includes what_building (unlike MRS)
+- Character limits reflect framework density (SLA 500-1400, STF 600-1500)
+
+**Tests:**
+- 11 comprehensive tests for SLA blueprint:
+  - YAML loading and caching
+  - Required fields validation
+  - Section structure (3 sections: Story/Lesson/Application)
+  - Section details validation
+  - Validation rules
+  - Compatible pillars
+  - Examples structure
+  - Best practices/anti-patterns
+  - Voice guidelines
+  - Description content check
+- pytest: PASS (133 total tests, 11 new)
+- ruff: PASS
+- mypy: Pre-existing errors only
+
+**Manual testing:**
+- uv run content-engine blueprints list --category frameworks ✓
+- Shows all three frameworks: MRS, SLA, STF ✓
+
+**Commit:** 50682c7
+
+---
+

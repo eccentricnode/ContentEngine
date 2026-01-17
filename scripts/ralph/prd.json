@@ -116,7 +116,7 @@
         "pytest passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Story-Lesson-Application framework"
     },
     {
