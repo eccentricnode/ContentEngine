@@ -676,3 +676,58 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-014 - Implement content_generator.py
+
+**Implemented:**
+- Created agents/linkedin/content_generator.py with blueprint-based generation
+- generate_post() with auto-framework selection, template rendering, LLM calls, iterative refinement
+- _prepare_template_context() transforms YAML blueprints into template-ready format
+- GenerationResult dataclass with content, framework_used, validation_score, is_valid, iterations, violations
+- Integrates OllamaClient from lib/ollama.py for LLM calls
+- Iterative refinement loop (max 3 attempts) with validation feedback
+
+**Files changed:**
+- agents/linkedin/content_generator.py (new)
+- tests/test_content_generator.py (new)
+- scripts/ralph/prd.json (updated CE-BP-014 passes: true)
+
+**Learnings:**
+- Pillar characteristics in YAML are list of single-key dicts, not multi-key dict
+- Access pattern: list(char.keys())[0] and list(char.values())[0]
+- Template context requires flattening nested YAML structures
+- Style rules (dict with list values) need ", ".join() for template rendering
+- Iterative refinement: first attempt uses base prompt, subsequent use violations as feedback
+- Best attempt tracking ensures we return something even if never fully valid
+- AIError on first attempt re-raises (fail fast), on refinement breaks loop (graceful degradation)
+
+**Codebase patterns discovered:**
+- generate_post() orchestrates full pipeline: load blueprints → prepare context → render template → LLM call → validate → refine
+- _prepare_template_context() is pure function transforming YAML → template dict
+- GenerationResult bundles all relevant metadata about generation attempt
+- Mocked LLM tests use side_effect for multiple return values (test retry logic)
+- Template context limits forbidden phrases to 15 for prompt brevity
+- Validation feedback loop: violations from attempt N become refinement instructions for attempt N+1
+
+**Tests:**
+- 13 comprehensive tests for content_generator:
+  - Auto-selects framework (what_building → STF)
+  - Uses specified framework
+  - Returns valid content (first try success)
+  - Retries on invalid (too short → valid)
+  - Returns best after max iterations
+  - Raises AIError on first failure
+  - Handles refinement failure gracefully
+  - Works with PIF framework
+  - Supports custom models
+  - Template context preparation
+  - Limits forbidden phrases
+  - Handles empty context
+  - GenerationResult dataclass
+- pytest: PASS (209 total tests, 13 new)
+- ruff: PASS (removed unused variable)
+- mypy: PASS (type annotations added)
+
+**Commit:** 460ca41
+
+---
+

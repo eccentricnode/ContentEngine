@@ -214,7 +214,7 @@
         "mypy + pytest pass"
       ],
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "notes": "Blueprint-based content generation"
     },
     {
