@@ -1062,3 +1062,67 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-021 - Create PlatformRules.yaml constraint
+
+**Implemented:**
+- Created comprehensive PlatformRules.yaml constraint with platform-specific validation rules
+- LinkedIn rules: Character limits (800-1200 optimal, 3000 max), formatting (line breaks, emojis, hashtags), engagement optimization, red flags
+- Twitter rules: Character limits (280/tweet), thread structure, engagement tactics (planned for future)
+- Blog rules: Word count ranges, formatting (headings, paragraphs, lists), SEO optimization (planned for future)
+- Cross-platform rules: Accessibility guidelines, brand consistency principles
+- Validation severity levels: errors (must fix), warnings (should fix), suggestions (optional improvements)
+
+**Files changed:**
+- blueprints/constraints/PlatformRules.yaml (new - comprehensive platform rules)
+- tests/test_platformrules_constraint.py (new - 17 tests)
+- scripts/ralph/prd.json (updated CE-BP-021 passes: true)
+
+**Learnings:**
+- Platform rules encode best practices for character limits, formatting, engagement
+- Severity levels (errors/warnings/suggestions) provide graduated feedback
+- LinkedIn optimal range (800-1200) balances depth with engagement
+- Red flags list helps identify spammy or low-quality content patterns
+- Cross-platform rules ensure accessibility and brand consistency
+- Future platform support (Twitter, Blog) defined for easy expansion
+
+**Codebase patterns discovered:**
+- Constraint blueprints use nested structure: platform → category → specific rules
+- Best practices included alongside rules for context-aware validation
+- Validation levels map to post_validator severity (ERROR/WARNING/SUGGESTION)
+- LinkedIn complete, Twitter/Blog planned (structure ready for integration)
+- Metadata tracks version, last_updated, platform_support status
+
+**LinkedIn Platform Rules Summary:**
+- Character limits: 800-1200 optimal, 3000 absolute max
+- Formatting: Line breaks required, max 3 emojis, max 5 hashtags
+- Engagement: Hook in first 2 lines, CTA recommended, question prompts
+- Red flags: Walls of text, excessive emojis (4+), hashtag stuffing (6+), all caps
+
+**Tests:**
+- 17 comprehensive tests:
+  - Loads successfully
+  - Required fields validation
+  - LinkedIn character limits
+  - LinkedIn formatting rules (line breaks, emojis, hashtags, lists, mentions)
+  - LinkedIn engagement optimization
+  - LinkedIn red flags
+  - Twitter character limits
+  - Blog word count guidelines
+  - Validation severity levels (errors/warnings/suggestions)
+  - Cross-platform rules (accessibility, brand consistency)
+  - Metadata fields
+  - Caching behavior
+  - Type and description validation
+- pytest: PASS (308 total tests, 17 new)
+- ruff: PASS (clean)
+- mypy: PASS
+
+**Platform Support:**
+- LinkedIn: Complete (ready for validation integration)
+- Twitter: Planned (structure defined, ready to activate)
+- Blog: Planned (structure defined, ready to activate)
+
+**Commit:** 628cf01
+
+---
+

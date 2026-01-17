@@ -327,7 +327,7 @@
         "pytest passes"
       ],
       "priority": 21,
-      "passes": false,
+      "passes": true,
       "notes": "Platform-specific content rules"
     },
     {
