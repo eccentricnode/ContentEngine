@@ -259,3 +259,53 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-006 - Create STF.yaml framework blueprint
+
+**Implemented:**
+- Created blueprints/frameworks/linkedin/STF.yaml with comprehensive STF framework definition
+- 4 sections: Problem, Tried, Worked, Lesson (each with detailed guidelines)
+- Validation rules: 4 sections required, 600-1500 chars
+- Compatible pillars: what_building, what_learning, problem_solution
+- 2 detailed examples with all four sections
+- Best practices, anti-patterns, and voice guidelines
+
+**Files changed:**
+- blueprints/frameworks/linkedin/STF.yaml (new)
+- tests/test_stf_framework.py (new)
+
+**Learnings:**
+- Blueprint YAML structure allows encoding deep content framework knowledge
+- Examples in YAML help LLMs understand framework execution
+- Guidelines broken down by section provide structured generation hints
+- Anti-patterns as important as best practices for quality control
+- Voice guidelines ensure brand consistency across generated content
+
+**Codebase patterns discovered:**
+- Blueprint examples should follow exact framework structure
+- Each section needs both description and actionable guidelines
+- Compatible_pillars connects frameworks to content pillars
+- Validation rules at framework level set content quality boundaries
+
+**Tests:**
+- 10 comprehensive tests for STF blueprint:
+  - YAML loading and caching
+  - Required fields validation
+  - Section structure (4 sections, correct order)
+  - Section details (guidelines, descriptions)
+  - Validation rules (min/max chars, sections)
+  - Compatible pillars
+  - Examples structure
+  - Best practices/anti-patterns
+  - Voice guidelines
+- pytest: PASS (111 total tests, 10 new)
+- ruff: PASS (new files clean)
+- mypy: Pre-existing errors only
+
+**Manual testing:**
+- uv run content-engine blueprints list ✓ (shows linkedin/STF)
+- Blueprint loads successfully via blueprint_loader ✓
+
+**Commit:** 7501e1b
+
+---
+
