@@ -1,0 +1,75 @@
+{
+  "branchName": "main",
+  "userStories": [
+    {
+      "id": "CE-001",
+      "title": "Session History Parser",
+      "acceptanceCriteria": [
+        "Create lib/context_capture.py module",
+        "Implement read_session_history() function that reads ~/.claude/History/Sessions/",
+        "Parse session JSON files (handle both .json and .jsonl formats)",
+        "Extract: date, duration, topics discussed, key decisions made",
+        "Return structured list of SessionSummary objects (dataclass or TypedDict)",
+        "Handle FileNotFoundError and JSON parsing errors gracefully",
+        "Add tests for session parsing (use fixture files)",
+        "uv run pytest passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Foundation for context capture. Parse PAI session history into structured data."
+    },
+    {
+      "id": "CE-002",
+      "title": "Project Notes Aggregator",
+      "acceptanceCriteria": [
+        "Add read_project_notes() function to lib/context_capture.py",
+        "Read markdown files from ~/Documents/Folio/1-Projects/",
+        "Extract: project name, last updated, key insights, current status",
+        "Parse markdown frontmatter if present, otherwise parse headings",
+        "Return structured list of ProjectNote objects",
+        "Handle missing directories and malformed markdown",
+        "Add tests for project note parsing",
+        "uv run pytest passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Aggregate project notes from Folio for context injection."
+    },
+    {
+      "id": "CE-003",
+      "title": "Context Synthesizer with Ollama",
+      "acceptanceCriteria": [
+        "Create lib/context_synthesizer.py module",
+        "Implement synthesize_daily_context() function",
+        "Takes SessionSummary and ProjectNote lists as input",
+        "Sends to Ollama llama3:8b with prompt: 'Summarize key themes, decisions, and progress from today. Focus on: projects worked on, decisions made, insights gained. Output JSON with keys: themes, decisions, progress'",
+        "Parse Ollama JSON response",
+        "Return DailyContext object with structured fields",
+        "Add health check for Ollama connection",
+        "Add tests with mocked Ollama responses",
+        "uv run pytest passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Use local LLM to synthesize raw context into structured insights."
+    },
+    {
+      "id": "CE-004",
+      "title": "Context Storage and CLI",
+      "acceptanceCriteria": [
+        "Create context/ directory for storing daily context",
+        "Implement save_context() function that writes DailyContext to context/YYYY-MM-DD.json",
+        "Add CLI command: uv run content-engine capture-context",
+        "CLI orchestrates: read sessions → read projects → synthesize → save",
+        "CLI prints summary: 'Context captured: X sessions, Y projects, Z themes'",
+        "Add --date flag to capture context for specific date",
+        "Create tests for full context capture pipeline",
+        "Update README.md with context capture usage docs",
+        "uv run pytest passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Complete the context capture pipeline with storage and CLI interface."
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+name: Repurposing1to10
+description: Transform one core idea into 10 content pieces across multiple platforms
+platform: multi_platform
+frequency: on_demand
+target_output: 10
+
+# Repurposing benefits
+benefits:
+  efficiency_multiplier: 10x content from 1 idea
+  explanation: |
+    Traditional approach: 10 separate ideas × 15 min each = 150 min
+    Repurposing approach: 1 deep idea × 45 min development = 45 min
+    Net savings: 105 minutes per batch
+  additional_benefits:
+    - Consistent core message across platforms
+    - Platform-specific optimization for each piece
+    - Deeper exploration of single valuable idea
+    - Cross-promotion opportunities between platforms
+    - Reinforcement of key insights through repetition
+
+# Workflow steps
+steps:
+  - id: idea_extraction
+    name: Idea Extraction
+    duration_minutes: 10
+    description: Extract and crystallize the core idea worth repurposing
+    inputs:
+      - Source content (session note, project update, learning, etc.)
+      - Content pillars to determine primary pillar
+    outputs:
+      - Core idea statement (1-2 sentences)
+      - Key insights (3-5 bullet points)
+      - Supporting evidence/examples
+      - Primary content pillar assignment
+    prompt_template: |
+      Analyze this source content and extract the core idea:
+
+      ## Source Content
+      {{source_content}}
+
+      Identify:
+      1. Core Idea: The single most valuable insight (1-2 sentences)
+      2. Key Insights: 3-5 supporting points that expand on the core idea
+      3. Evidence: Specific examples, data, or stories that prove the point
+      4. Content Pillar: which_building, what_learning, sales_tech, or problem_solution
+
+      Output as JSON:
+      {
+        "core_idea": "...",
+        "key_insights": ["...", "..."],
+        "evidence": ["...", "..."],
+        "pillar": "...",
+        "why_valuable": "..."
+      }
+
+  - id: platform_mapping
+    name: Platform Mapping
+    duration_minutes: 5
+    description: Select 10 content formats across platforms
+    inputs:
+      - Core idea with pillar assignment
+      - Platform capabilities (LinkedIn, Twitter, Blog, etc.)
+    outputs:
+      - 10 content formats selected
+      - Priority order for creation
+      - Platform-specific requirements
+    prompt_template: |
+      Given this core idea: {{core_idea}}
+
+      Select 10 content formats optimized for different platforms:
+
+      ## Available Formats
+      LinkedIn:
+        - Long-form post (STF/MRS/SLA framework)
+        - Carousel (5-10 slides)
+        - Poll/engagement post (PIF framework)
+        - Short insight post (3-5 lines)
+
+      Twitter/X:
+        - Thread (8-12 tweets)
+        - Single viral tweet
+        - Quote + commentary
+        - Poll with context
+
+      Blog:
+        - Deep-dive article (1500-2500 words)
+        - Tutorial/how-to (500-1000 words)
+        - Listicle (10 points)
+
+      Visual:
+        - Infographic (key stats/process)
+        - Carousel slides (platform-agnostic)
+        - Quote graphic
+
+      Video:
+        - YouTube short script (60 sec)
+        - Tutorial outline (5-10 min)
+        - Talking points (live stream)
+
+      Select 10 formats that maximize reach while honoring the core idea.
+      Prioritize formats that align with current platforms (LinkedIn primary).
+
+      Output as JSON array: platform, format, purpose, estimated_engagement
+
+  - id: content_adaptation
+    name: Content Adaptation
+    duration_minutes: 25
+    description: Create platform-specific adaptations of core idea
+    inputs:
+      - Core idea and key insights
+      - 10 selected formats with requirements
+      - Platform constraints (char limits, style, etc.)
+    outputs:
+      - 10 adapted content pieces
+      - Each optimized for its platform
+      - Cross-promotion hooks embedded
+    process:
+      - For each format in priority order
+      - Extract most relevant insights for platform
+      - Apply platform-specific constraints
+      - Optimize for platform algorithms
+      - Add cross-promotion opportunities
+      - Validate against platform best practices
+    prompt_template: |
+      Create {{format}} for {{platform}} based on this core idea:
+
+      ## Core Idea
+      {{core_idea}}
+
+      ## Key Insights
+      {{#key_insights}}
+      - {{.}}
+      {{/key_insights}}
+
+      ## Evidence
+      {{#evidence}}
+      - {{.}}
+      {{/evidence}}
+
+      ## Platform Requirements
+      Platform: {{platform}}
+      Format: {{format}}
+      Constraints: {{constraints}}
+      Optimal length: {{optimal_length}}
+      Style: {{style_guide}}
+
+      ## Adaptation Guidelines
+      - Lead with insight most valuable to {{platform}} audience
+      - Follow {{platform}} best practices for {{format}}
+      - Include call-to-action appropriate for platform
+      - Add subtle cross-promotion (e.g., "More on this in my blog")
+      - Optimize for {{platform}} algorithm preferences
+
+      Generate complete {{format}} content optimized for {{platform}}.
+
+  - id: cross_linking
+    name: Cross-Linking Strategy
+    duration_minutes: 3
+    description: Create cross-promotion links between pieces
+    inputs:
+      - 10 created content pieces
+      - Publishing timeline
+    outputs:
+      - Cross-linking map
+      - Call-to-action suggestions
+      - Publishing sequence recommendations
+    prompt_template: |
+      Create cross-promotion strategy for these 10 content pieces:
+
+      {{#content_pieces}}
+      {{id}}. {{platform}} - {{format}}: {{title}}
+      {{/content_pieces}}
+
+      Provide:
+      1. Publishing Sequence: Which piece to publish first, second, etc.
+      2. Cross-Links: How each piece references others
+      3. CTAs: Specific calls-to-action for each piece
+      4. Timeline: Suggested spacing between publications
+
+      Goals:
+      - Drive traffic from high-engagement platforms to owned platforms (blog)
+      - Create content loops (Twitter → LinkedIn → Blog → YouTube)
+      - Maximize discoverability across platforms
+      - Build anticipation with teaser content
+
+      Output as JSON with sequence, cross_links, ctas, timeline
+
+  - id: validation_and_polish
+    name: Validation & Polish
+    duration_minutes: 7
+    description: Validate all pieces and polish based on platform rules
+    inputs:
+      - 10 content pieces
+      - Platform-specific constraints
+      - Brand voice guidelines
+    outputs:
+      - 10 validated and polished pieces
+      - Validation reports for each
+      - Ready-to-publish package
+    prompt_template: |
+      Review these content pieces for platform compliance:
+
+      {{#content_pieces}}
+      ## {{platform}} - {{format}}
+      {{content_preview}}
+
+      Platform constraints: {{constraints}}
+      Current metrics: length={{length}}, engagement_elements={{engagement_count}}
+      {{/content_pieces}}
+
+      For each piece:
+      - Check platform-specific constraints (char limits, hashtag limits, etc.)
+      - Verify brand voice consistency
+      - Ensure cross-promotion links are appropriate
+      - Validate calls-to-action are clear
+      - Check for typos or formatting issues
+
+      Provide:
+      - Validation status: PASS/NEEDS_REVISION
+      - Specific issues if any
+      - Suggested improvements
+      - Final polish recommendations
+
+      Output as JSON array with: id, status, issues, suggestions
+
+# Metadata
+estimated_total_duration: 50
+difficulty: advanced
+prerequisites:
+  - One well-developed source idea
+  - Platform accounts for cross-posting
+  - Brand voice guidelines established
+success_criteria:
+  - 10 unique content pieces created
+  - All pieces pass platform validation
+  - Cross-linking strategy defined
+  - Ready for publishing within 1 hour
+
+# Platform-specific rules
+platform_constraints:
+  linkedin:
+    max_chars: 3000
+    optimal_chars: 800-1200
+    max_hashtags: 5
+    optimal_hashtags: 3
+    allow_emojis: true
+    max_emojis: 3
+
+  twitter:
+    max_chars: 280
+    thread_optimal: 8-12
+    max_hashtags: 2
+    optimal_hashtags: 1
+    allow_emojis: true
+
+  blog:
+    min_words: 500
+    optimal_words: 1500-2500
+    sections_required: true
+    seo_optimization: true
+
+  visual:
+    formats: [png, jpg, svg]
+    dimensions: platform_specific
+    text_overlay: minimal
+    branding: required
+
+# Example output structure
+example_output:
+  core_idea: Building AI agents that extend your capabilities
+  pieces_created: 10
+  distribution:
+    linkedin: 3
+    twitter: 3
+    blog: 2
+    visual: 1
+    video: 1
+  publishing_timeline:
+    day_1: [LinkedIn_long_form, Twitter_thread]
+    day_2: [Blog_deep_dive]
+    day_3: [LinkedIn_carousel, Twitter_quote]
+    day_4: [LinkedIn_poll, Visual_infographic]
+    day_5: [Blog_tutorial, Twitter_poll]
+    day_6: [Video_script]
+  cross_links_created: 18
+  estimated_total_reach: 5x individual piece reach
+
+# Repurposing templates by pillar
+repurposing_templates:
+  what_building:
+    primary_formats: [LinkedIn_STF, Blog_tutorial, Twitter_thread]
+    secondary_formats: [LinkedIn_carousel, Visual_infographic]
+    emphasis: Show the build, teach the process
+
+  what_learning:
+    primary_formats: [LinkedIn_MRS, Blog_deep_dive, Twitter_thread]
+    secondary_formats: [LinkedIn_short, Quote_graphic]
+    emphasis: Share the lesson, provoke thinking
+
+  sales_tech:
+    primary_formats: [LinkedIn_STF, Blog_how_to, Twitter_quote]
+    secondary_formats: [LinkedIn_poll, Video_script]
+    emphasis: Demonstrate value, invite engagement
+
+  problem_solution:
+    primary_formats: [LinkedIn_STF, Blog_tutorial, Visual_infographic]
+    secondary_formats: [Twitter_thread, LinkedIn_carousel]
+    emphasis: Show problem-solving, provide actionable steps

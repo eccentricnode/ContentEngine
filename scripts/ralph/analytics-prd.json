@@ -1,0 +1,89 @@
+{
+  "branchName": "feature/linkedin-analytics",
+  "userStories": [
+    {
+      "id": "AN-001",
+      "title": "Add tests for LinkedInAnalytics class",
+      "acceptanceCriteria": [
+        "Create tests/agents/linkedin/test_analytics.py",
+        "Test get_post_analytics() with mocked LinkedIn API response",
+        "Test save_post_with_metrics() creates valid JSONL",
+        "Test load_posts() reads JSONL correctly",
+        "Test update_posts_with_analytics() fetches and updates metrics",
+        "Mock requests library (don't hit real LinkedIn API)",
+        "Test error handling (API failures, malformed responses)",
+        "uv run pytest tests/agents/linkedin/test_analytics.py passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Ensure analytics module is fully tested before integration"
+    },
+    {
+      "id": "AN-002",
+      "title": "Add CLI command for analytics collection",
+      "acceptanceCriteria": [
+        "Add 'collect-analytics' command to cli.py",
+        "Command loads LINKEDIN_ACCESS_TOKEN from environment or database",
+        "Runs analytics.update_posts_with_analytics() on data/posts.jsonl",
+        "Prints summary: 'Updated analytics for X posts'",
+        "Add --days-back flag to specify time window (default: 7)",
+        "Add --test-post flag to fetch analytics for single URN",
+        "Handle missing access token gracefully with clear error",
+        "Update README.md with analytics CLI usage",
+        "uv run pytest passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Make analytics easily accessible via CLI"
+    },
+    {
+      "id": "AN-003",
+      "title": "Create posts.jsonl with existing post data",
+      "acceptanceCriteria": [
+        "Create data/posts.jsonl file",
+        "Add entry for New Year post (urn:li:share:7412668096475369472)",
+        "Include: post_id, posted_at (2026-01-01), blueprint_version (manual_v1), content",
+        "Use Post dataclass format from analytics.py",
+        "Run CLI to fetch analytics for this post",
+        "Verify metrics are populated in posts.jsonl",
+        "Document posts.jsonl schema in README.md"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Bootstrap posts tracking with existing LinkedIn post"
+    },
+    {
+      "id": "AN-004",
+      "title": "Add analytics dashboard script",
+      "acceptanceCriteria": [
+        "Create scripts/analytics_dashboard.py",
+        "Read posts.jsonl and display summary table",
+        "Show: post_id (truncated), date, engagement_rate, likes, comments",
+        "Calculate average engagement rate across all posts",
+        "Identify best and worst performing posts",
+        "Add --export-csv flag to save results to CSV",
+        "Script works with missing metrics (graceful degradation)",
+        "Add usage example to README.md"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Simple dashboard to visualize analytics data"
+    },
+    {
+      "id": "AN-005",
+      "title": "Schedule analytics collection cron job",
+      "acceptanceCriteria": [
+        "Create systemd/linkedin-analytics.service file",
+        "Service runs 'uv run content-engine collect-analytics' daily",
+        "Add systemd/linkedin-analytics.timer for scheduling",
+        "Timer runs at 10:00 AM daily",
+        "Document systemd setup in DEPLOYMENT_CHECKLIST.md",
+        "Include example: sudo systemctl enable linkedin-analytics.timer",
+        "Note: Requires LINKEDIN_ACCESS_TOKEN in environment"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Automate daily analytics collection via systemd"
+    }
+  ]
+}
