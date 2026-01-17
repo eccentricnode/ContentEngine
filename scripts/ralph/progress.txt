@@ -1515,3 +1515,44 @@ All 26 user stories completed successfully!
 
 ---
 
+
+## [2026-01-17] - AN-001 - Add tests for LinkedInAnalytics class
+
+**Implemented:**
+- Created comprehensive test suite for agents/linkedin/analytics.py
+- 31 tests covering all LinkedInAnalytics functionality
+- Test classes: TestLinkedInAnalyticsInit, TestGetPostAnalytics, TestSavePostWithMetrics, TestLoadPosts, TestUpdatePostsWithAnalytics, TestPostMetricsDataclass, TestPostDataclass
+- Mocked requests library to avoid real LinkedIn API calls
+
+**Files changed:**
+- tests/agents/linkedin/test_analytics.py (new - 597 lines, 31 tests)
+- tests/agents/linkedin/__init__.py (new)
+
+**Learnings:**
+- Mypy strict mode requires type annotations on all functions
+- Use `# mypy: disable-error-code="no-untyped-def"` at file top for test files to reduce annotation burden
+- Use `# type: ignore[import-untyped]` for libraries without type stubs (requests)
+- Mock patch pattern: `@patch("agents.linkedin.analytics.requests.get")`
+- Pytest fixtures with return types: `def analytics() -> LinkedInAnalytics:`
+- Testing async patterns: Mock response objects with .json(), .raise_for_status(), etc.
+- tmp_path fixture provides isolated temporary directory for file operations
+- JSONL testing: write/read cycle, verify line-by-line format
+- Error handling tests: Use side_effect for exceptions (Timeout, HTTPError, RequestException)
+- Division by zero handling: Engagement rate calculation when impressions = 0
+
+**Test Coverage:**
+- Initialization: access_token, base_url, headers setup
+- get_post_analytics(): success, empty response, missing keys, network errors, 401 auth, timeouts, zero impressions
+- save_post_with_metrics(): JSONL creation, format validation, metrics inclusion, append behavior
+- load_posts(): empty file, single/multiple posts, missing metrics, empty line handling
+- update_posts_with_analytics(): fetch logic, file updates, date filtering, existing metrics skip, failure handling, mixed scenarios
+- Dataclasses: Post and PostMetrics creation with/without optional fields
+
+**Tests:**
+- pytest: PASS (31 new tests)
+- mypy: PASS (with disabled no-untyped-def for test file)
+- ruff: PASS (auto-fixed unused Path import)
+
+**Commit:** c045b1b
+
+---

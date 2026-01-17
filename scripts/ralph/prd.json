@@ -15,7 +15,7 @@
         "uv run pytest tests/agents/linkedin/test_analytics.py passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Ensure analytics module is fully tested before integration"
     },
     {
