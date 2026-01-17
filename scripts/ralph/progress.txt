@@ -526,3 +526,57 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-011 - Create ContentPillars.yaml constraint
+
+**Implemented:**
+- Created blueprints/constraints/ContentPillars.yaml with comprehensive pillar definitions
+- Four pillars with distribution: what_building (35%), what_learning (30%), sales_tech (20%), problem_solution (15%)
+- Each pillar includes: name, description, percentage, examples, characteristics, themes
+- Distribution rules: 3-7 posts/week, ideal 5, weekly balance tracking
+- Validation rules: balance checks (±10% warning, ±20% error), min posts per pillar
+- Content principles for pillar-framework mapping and rotation
+- Balanced week example + poor balance example with fixes
+
+**Files changed:**
+- blueprints/constraints/ContentPillars.yaml (new)
+- tests/test_contentpillars_constraint.py (new)
+- scripts/ralph/prd.json (updated CE-BP-011 passes: true)
+
+**Learnings:**
+- Content pillars define topical distribution strategy (35%/30%/20%/15% balance)
+- Each pillar has unique characteristics and themes for content categorization
+- Distribution rules track over 7-day rolling window (not per-post)
+- Validation severity levels: warning (±10%) vs error (±20%)
+- Pillar determines framework choice pattern (e.g., what_building → STF/SLA)
+- Examples show both ideal balance and common mistakes with fixes
+
+**Codebase patterns discovered:**
+- Pillar percentage total validates to 100%
+- Each pillar structure: name, description, percentage, examples, characteristics, themes
+- Distribution tracking uses rolling window (weekly/monthly)
+- Validation gradients: warning → error based on severity
+- Content principles connect pillars to frameworks and guide rotation
+
+**Tests:**
+- 11 comprehensive tests for ContentPillars constraint:
+  - YAML loading and caching
+  - Required fields validation
+  - Four pillars with correct percentages
+  - Pillar structure validation
+  - Distribution rules (weekly min/max/ideal)
+  - Validation rules (severity levels)
+  - Content principles
+  - Balanced/poor balance examples
+  - Metadata fields
+- pytest: PASS (166 total tests, 11 new)
+- ruff: PASS (removed unused pytest import)
+- mypy: PASS (test file clean)
+
+**Manual testing:**
+- uv run content-engine blueprints list --category constraints ✓
+- Shows BrandVoice and ContentPillars ✓
+
+**Commit:** 2e3cb0c
+
+---
+
