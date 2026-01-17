@@ -1,10 +1,12 @@
 """Tests for LinkedIn Analytics Integration"""
+# mypy: disable-error-code="no-untyped-def"
 
 import json
 import pytest
 from datetime import datetime, timedelta
+from typing import Any, Dict
 from unittest.mock import Mock, patch
-import requests
+import requests  # type: ignore[import-untyped]
 
 from agents.linkedin.analytics import (
     LinkedInAnalytics,
