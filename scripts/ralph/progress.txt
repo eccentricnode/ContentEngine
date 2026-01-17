@@ -1186,3 +1186,45 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-023 - Integrate validation into generation pipeline
+
+**Implemented:**
+- Replaced simple validate_content() with comprehensive validate_post() from post_validator.py
+- Iterative refinement now uses full validation (framework + brand voice + platform rules)
+- Violation feedback includes severity levels (ERROR/WARNING) and suggestions
+- Generate → Validate → Refine loop (max 3 attempts)
+- Creates temporary Post object for validation during generation
+- Returns best attempt if max iterations reached
+
+**Files changed:**
+- agents/linkedin/content_generator.py (updated validation integration)
+- tests/test_content_generator.py (updated + 2 new tests)
+
+**Learnings:**
+- Post validator expects Post object, so create temp Post(id=0, content=generated)
+- Comprehensive validation provides much richer feedback than simple char limit check
+- Violation messages formatted as "SEVERITY: message (Suggestion: fix)" for LLM feedback
+- Only ERROR-level violations block is_valid (warnings/suggestions are ok)
+- Validation score reflects quality but is_valid is the key decision metric
+- Test expectations need to account for warnings (score < 1.0 even when valid)
+
+**Codebase patterns discovered:**
+- Comprehensive validation combines 3 validators: framework structure, brand voice, platform rules
+- Violation feedback loop: extract ERROR+WARNING violations → format as strings → feed to next iteration
+- Best attempt tracking ensures we always return something (even if never fully valid)
+- is_valid = no errors (warnings/suggestions don't block)
+- Score calculation: 1.0 - (errors * 0.20) - (warnings * 0.05) - (suggestions * 0.02)
+
+**Tests:**
+- 15 total tests for content_generator (2 new):
+  - test_generate_post_comprehensive_validation_refinement - verifies iterative refinement with comprehensive validation
+  - test_generate_post_violation_feedback_includes_suggestions - checks violation formatting
+  - Updated test_generate_post_returns_valid_content to expect score <= 1.0 (not exactly 1.0)
+- pytest: PASS (340 total tests)
+- ruff: PASS
+- mypy: PASS (no new errors in modified files)
+
+**Commit:** eb9f690
+
+---
+
