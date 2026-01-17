@@ -12,6 +12,7 @@ from lib.context_synthesizer import save_context, synthesize_daily_context
 from lib.database import init_db, get_db, Post, PostStatus, Platform, OAuthToken
 from lib.errors import AIError
 from lib.logger import setup_logger
+from lib.blueprint_loader import list_blueprints
 from agents.linkedin.post import post_to_linkedin
 
 
@@ -328,6 +329,42 @@ def capture_context(
     except Exception as e:
         click.echo(f"❌ Failed to capture context: {e}")
         logger.exception("Context capture failed")
+        sys.exit(1)
+
+
+@cli.group()
+def blueprints() -> None:
+    """Manage content blueprints (frameworks, workflows, constraints)."""
+    pass
+
+
+@blueprints.command("list")
+@click.option("--category", type=click.Choice(["frameworks", "workflows", "constraints"]), default=None, help="Filter by category")
+def list_blueprints_cmd(category: Optional[str]) -> None:
+    """List all available blueprints."""
+    try:
+        blueprint_list = list_blueprints(category=category)
+
+        if not blueprint_list:
+            click.echo("No blueprints found.")
+            return
+
+        # Print header
+        click.echo("\n📋 Available Blueprints\n")
+
+        # Group and display by category
+        for cat, items in sorted(blueprint_list.items()):
+            click.echo(f"  {cat.upper()}:")
+            if items:
+                for item in items:
+                    click.echo(f"    • {item}")
+            else:
+                click.echo("    (none)")
+            click.echo()
+
+    except Exception as e:
+        click.echo(f"❌ Failed to list blueprints: {e}")
+        logger.exception("Blueprint listing failed")
         sys.exit(1)
 
 
