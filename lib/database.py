@@ -33,6 +33,14 @@ class PostStatus(str, Enum):
     REJECTED = "rejected"
 
 
+class ContentPlanStatus(str, Enum):
+    """Content plan status enum."""
+    PLANNED = "planned"
+    IN_PROGRESS = "in_progress"
+    GENERATED = "generated"
+    CANCELLED = "cancelled"
+
+
 class Platform(str, Enum):
     """Social media platform enum."""
     LINKEDIN = "linkedin"
@@ -177,6 +185,32 @@ class OAuthToken(Base):
 
     def __repr__(self) -> str:
         return f"<OAuthToken(platform={self.platform})>"
+
+
+class ContentPlan(Base):
+    """Content plan model for workflow-generated content ideas."""
+
+    __tablename__ = "content_plans"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    week_start_date = Column(String(10), nullable=False)  # YYYY-MM-DD format
+    pillar = Column(String(50), nullable=False)  # what_building, what_learning, etc.
+    framework = Column(String(50), nullable=False)  # STF, MRS, SLA, PIF
+    idea = Column(Text, nullable=False)  # Content idea/title
+    status = Column(SQLEnum(ContentPlanStatus), nullable=False, default=ContentPlanStatus.PLANNED)
+
+    # Optional: link to generated post
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    post = relationship("Post", foreign_keys=[post_id])
+
+    def __repr__(self) -> str:
+        return f"<ContentPlan(id={self.id}, pillar={self.pillar}, framework={self.framework}, status={self.status})>"
 
 
 def init_db() -> None:

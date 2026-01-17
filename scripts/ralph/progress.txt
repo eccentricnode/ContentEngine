@@ -833,3 +833,62 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-017 - Create Repurposing1to10.yaml workflow
+
+**Implemented:**
+- Created comprehensive Repurposing1to10.yaml workflow blueprint
+- 5 sequential steps transforming one idea into 10 platform-specific content pieces
+- Multi-platform support: LinkedIn, Twitter/X, Blog, Visual, Video
+- Platform-specific constraints and validation rules
+- Pillar-specific repurposing templates with format recommendations
+- Cross-promotion strategy with content loops
+- Efficiency multiplier: 10x content from 1 idea (saves 105 minutes per batch)
+
+**Files changed:**
+- blueprints/workflows/Repurposing1to10.yaml (new)
+- tests/test_repurposing_workflow.py (new - 18 tests)
+- scripts/ralph/prd.json (updated CE-BP-017 passes: true)
+
+**Learnings:**
+- Repurposing workflow differs from batching workflow (1→10 vs 10 from scratch)
+- Platform constraints vary significantly (Twitter 280 chars vs Blog 1500+ words)
+- Cross-linking strategy maximizes reach by creating content loops
+- Pillar-specific templates guide format selection (what_building → tutorial/infographic)
+- Publishing sequence matters for cross-promotion effectiveness
+- Repurposing templates map primary/secondary formats per pillar
+- Multi-platform workflows need on_demand frequency (not weekly like batching)
+
+**Codebase patterns discovered:**
+- Workflow YAML supports platform-specific constraints as nested dicts
+- Repurposing templates connect pillars to optimal content formats
+- Cross-linking step creates networked content strategy
+- Platform constraints include max/optimal ranges for better UX
+- Publishing timeline structures content release over multiple days
+- Example output demonstrates distribution and reach multiplier effects
+
+**Tests:**
+- 18 comprehensive tests for Repurposing1to10 workflow:
+  - YAML loading and required fields
+  - 5 steps with correct order and metadata
+  - Mustache prompt templates
+  - Benefits structure (efficiency multiplier, 105 min savings)
+  - Platform constraints (LinkedIn/Twitter/Blog/Visual)
+  - Repurposing templates for all 4 pillars
+  - Prerequisites and success criteria
+  - Example output structure
+  - Step durations sum validation
+  - Content adaptation process field
+  - Cross-linking step validation
+  - Caching behavior
+- pytest: PASS (260 total tests, 18 new)
+- ruff: PASS
+- mypy: PASS
+
+**Manual testing:**
+- uv run content-engine blueprints list --category workflows ✓
+- Shows both Repurposing1to10 and SundayPowerHour ✓
+
+**Commit:** ff5ff2f
+
+---
+
