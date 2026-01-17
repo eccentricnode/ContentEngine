@@ -731,3 +731,48 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-015 - Add generate CLI command
+
+**Implemented:**
+- Added generate CLI command to cli.py with blueprint-based content generation
+- Command options: --pillar (required), --framework (optional), --date (optional), --model (optional)
+- Full workflow: context capture → synthesis → generation → validation → database save
+- Displays validation warnings, content preview, and next steps to user
+
+**Files changed:**
+- cli.py (added generate command function)
+- tests/test_generate_cli.py (new - 14 comprehensive tests)
+
+**Learnings:**
+- Click's required=True enforces option presence without default value
+- Multiple mocking layers needed: LLM, database, file system, context synthesis
+- lambda p: setattr() pattern for mock database refresh to set post.id
+- Exception hierarchy matters: FileNotFoundError vs AIError vs generic Exception
+- Content preview truncation (500 chars) improves CLI UX for long posts
+
+**Codebase patterns discovered:**
+- CLI error handling: specific error types get targeted messages (AIError → "Make sure Ollama is running")
+- Database pattern: add → commit → refresh to populate auto-generated fields
+- Missing projects directory handled gracefully (warning, not error)
+- Next steps display helps user understand workflow progression
+- DailyContext conversion to dict needed for generate_post() interface
+
+**Tests:**
+- 14 comprehensive tests for generate command:
+  - Required/optional argument validation
+  - Valid pillar/framework choice enforcement
+  - Auto-framework selection vs specified framework
+  - Custom date and model options
+  - Validation warnings display
+  - Error handling (missing sessions, AI errors, invalid dates)
+  - Database save verification
+  - Next steps display
+- All tests use mocked dependencies (no real LLM/DB/filesystem calls)
+- pytest: PASS (14 new tests, 210 total)
+- ruff: PASS (test file clean)
+- mypy: Pre-existing errors only
+
+**Commit:** fa20501
+
+---
+

@@ -231,7 +231,7 @@
         "mypy + pytest pass"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "CLI interface for blueprint-based generation"
     },
     {
