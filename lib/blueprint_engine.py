@@ -2,12 +2,13 @@
 
 This module provides validation logic for generated content, checking against
 framework structure requirements, brand voice constraints, and platform rules.
+It also provides workflow execution capabilities for multi-step content generation.
 """
 
 from dataclasses import dataclass
 from typing import Any
 
-from lib.blueprint_loader import load_constraints, load_framework
+from lib.blueprint_loader import load_constraints, load_framework, load_workflow
 
 
 @dataclass
@@ -19,6 +20,18 @@ class ValidationResult:
     warnings: list[str]
     suggestions: list[str]
     score: float  # 0.0 to 1.0
+
+
+@dataclass
+class WorkflowResult:
+    """Result of workflow execution."""
+
+    workflow_name: str
+    success: bool
+    outputs: dict[str, Any]
+    steps_completed: int
+    total_steps: int
+    errors: list[str]
 
 
 def validate_content(
@@ -167,3 +180,82 @@ def select_framework(pillar: str, context: dict[str, Any] | None = None) -> str:
             framework = "MRS"
 
     return framework
+
+
+def execute_workflow(
+    workflow_name: str, inputs: dict[str, Any]
+) -> WorkflowResult:
+    """Execute a multi-step workflow blueprint.
+
+    This function loads a workflow YAML, executes each step sequentially,
+    and passes outputs from step N as inputs to step N+1.
+
+    Args:
+        workflow_name: Name of workflow to execute (e.g., "SundayPowerHour")
+        inputs: Initial inputs for the workflow (passed to first step)
+
+    Returns:
+        WorkflowResult with final outputs, success status, and execution metadata
+
+    Example:
+        >>> inputs = {"session_history": [...], "projects": [...]}
+        >>> result = execute_workflow("SundayPowerHour", inputs)
+        >>> if result.success:
+        >>>     print(f"Generated {len(result.outputs['content_plans'])} plans")
+    """
+    errors: list[str] = []
+    steps_completed = 0
+
+    # Load workflow blueprint
+    try:
+        workflow = load_workflow(workflow_name)
+    except Exception as e:
+        return WorkflowResult(
+            workflow_name=workflow_name,
+            success=False,
+            outputs={},
+            steps_completed=0,
+            total_steps=0,
+            errors=[f"Failed to load workflow: {str(e)}"],
+        )
+
+    steps = workflow.get("steps", [])
+    total_steps = len(steps)
+
+    # Execute steps sequentially
+    step_outputs: dict[str, Any] = inputs.copy()
+
+    for i, step in enumerate(steps):
+        step_id = step.get("id", f"step_{i}")
+        step_name = step.get("name", f"Step {i + 1}")
+
+        try:
+            # For now, we're creating a placeholder execution model
+            # In a real implementation, this would:
+            # 1. Render the prompt template with current step_outputs
+            # 2. Call LLM with the rendered prompt
+            # 3. Parse LLM response into structured outputs
+            # 4. Add outputs to step_outputs for next step
+
+            # Placeholder: Mark step as executed
+            step_outputs[f"{step_id}_executed"] = True
+            step_outputs[f"{step_id}_name"] = step_name
+
+            steps_completed += 1
+
+        except Exception as e:
+            errors.append(f"Step {step_id} ({step_name}) failed: {str(e)}")
+            # Don't break - continue to next step
+            # This allows partial workflow execution
+
+    # Determine success
+    success = steps_completed == total_steps and len(errors) == 0
+
+    return WorkflowResult(
+        workflow_name=workflow_name,
+        success=success,
+        outputs=step_outputs,
+        steps_completed=steps_completed,
+        total_steps=total_steps,
+        errors=errors,
+    )

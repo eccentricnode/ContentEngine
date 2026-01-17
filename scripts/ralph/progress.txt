@@ -892,3 +892,57 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-018 - Add ContentPlan table to database
+
+**Implemented:**
+- Added ContentPlan model to lib/database.py for workflow content planning
+- ContentPlanStatus enum with lifecycle states: PLANNED, IN_PROGRESS, GENERATED, CANCELLED
+- Table columns: id, week_start_date, pillar, framework, idea, status, post_id, timestamps
+- Optional relationship to Post model via post_id foreign key
+- Created Alembic migration 4a0e3b03ab4c
+- Successfully ran migration to create content_plans table
+
+**Files changed:**
+- lib/database.py (added ContentPlan model, ContentPlanStatus enum)
+- alembic/versions/4a0e3b03ab4c_add_content_plans_table_for_workflow_.py (new)
+- tests/test_contentplan_model.py (new - 9 tests)
+- scripts/ralph/prd.json (updated CE-BP-018 passes: true)
+
+**Learnings:**
+- ContentPlan tracks lifecycle from workflow planning to post generation
+- week_start_date stored as string (YYYY-MM-DD) for easy querying
+- post_id foreign key allows linking plans to generated posts
+- ContentPlanStatus tracks workflow progression
+- Relationship to Post uses foreign_keys=[post_id] for explicit join
+- SQLAlchemy relationships work across models in same file
+
+**Codebase patterns discovered:**
+- Enum inheritance: class ContentPlanStatus(str, Enum) for string enums
+- SQLEnum column type for enum fields in database
+- Default status set in Column definition: default=ContentPlanStatus.PLANNED
+- Optional foreign key: nullable=True for post_id
+- relationship() with foreign_keys parameter for explicit joins
+- __repr__ includes key identifying fields (id, pillar, framework, status)
+
+**Tests:**
+- 9 comprehensive tests for ContentPlan CRUD:
+  - Create, read, update, delete operations
+  - Query by week_start_date
+  - Query by pillar
+  - Post relationship (foreign key)
+  - __repr__ method
+  - All ContentPlanStatus enum values
+- pytest: PASS (269 total tests, 9 new)
+- ruff: PASS
+- mypy: PASS
+
+**Database migration:**
+- Command: uv run alembic revision --autogenerate -m "Add content_plans table"
+- Migration file: 4a0e3b03ab4c_add_content_plans_table_for_workflow_.py
+- Applied: uv run alembic upgrade head
+- Table created successfully in content.db
+
+**Commit:** 9da6517
+
+---
+
