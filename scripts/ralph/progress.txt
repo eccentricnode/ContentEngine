@@ -1182,7 +1182,7 @@ not addressed as they're unrelated to this story.
 - Not yet CLI-integrated (next story: CE-BP-024 adds validate CLI command)
 - Validation logic ready for integration into content_generator iterative refinement (CE-BP-023)
 
-**Commit:** (pending)
+**Commit:** 1fd4e20
 
 ---
 
