@@ -5,7 +5,7 @@ from typing import Optional
 from enum import Enum
 from pathlib import Path
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Enum as SQLEnum, ForeignKey, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Enum as SQLEnum, ForeignKey, Boolean, JSON
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker, relationship
 
 
@@ -137,6 +137,24 @@ class Post(Base):
 
     def __repr__(self) -> str:
         return f"<Post(id={self.id}, platform={self.platform}, status={self.status})>"
+
+
+class Blueprint(Base):
+    """Blueprint cache model for storing loaded blueprints."""
+
+    __tablename__ = "blueprints"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    category = Column(String(50), nullable=False)  # framework, workflow, constraint
+    platform = Column(String(50), nullable=True)  # linkedin, twitter, blog (NULL for non-framework)
+    data = Column(JSON, nullable=False)  # Parsed YAML data as JSON
+    version = Column(String(50), nullable=True)  # Optional versioning
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return f"<Blueprint(id={self.id}, name={self.name}, category={self.category})>"
 
 
 class OAuthToken(Base):
