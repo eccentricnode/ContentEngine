@@ -14,6 +14,7 @@ from lib.errors import AIError
 from lib.logger import setup_logger
 from lib.blueprint_loader import list_blueprints
 from agents.linkedin.post import post_to_linkedin
+from agents.linkedin.content_generator import generate_post
 
 
 logger = setup_logger(__name__)
@@ -365,6 +366,132 @@ def list_blueprints_cmd(category: Optional[str]) -> None:
     except Exception as e:
         click.echo(f"❌ Failed to list blueprints: {e}")
         logger.exception("Blueprint listing failed")
+        sys.exit(1)
+
+
+@cli.command()
+@click.option(
+    "--pillar",
+    type=click.Choice(["what_building", "what_learning", "sales_tech", "problem_solution"]),
+    required=True,
+    help="Content pillar to use for generation",
+)
+@click.option(
+    "--framework",
+    type=click.Choice(["STF", "MRS", "SLA", "PIF"]),
+    default=None,
+    help="Framework to use (auto-selected if not specified)",
+)
+@click.option(
+    "--date",
+    default=None,
+    help="Date for context capture (YYYY-MM-DD), defaults to today",
+)
+@click.option(
+    "--model",
+    default="llama3:8b",
+    help="Ollama model to use for generation",
+)
+def generate(pillar: str, framework: Optional[str], date: Optional[str], model: str) -> None:
+    """Generate a LinkedIn post using blueprints and context."""
+    # Determine date
+    if date:
+        try:
+            context_date = datetime.strptime(date, "%Y-%m-%d")
+            date_str = date
+        except ValueError:
+            click.echo("❌ Invalid date format. Use YYYY-MM-DD")
+            sys.exit(1)
+    else:
+        context_date = datetime.now()
+        date_str = context_date.strftime("%Y-%m-%d")
+
+    click.echo(f"📅 Generating content for {date_str}...")
+    click.echo(f"   Pillar: {pillar}")
+    click.echo(f"   Framework: {framework or 'auto-select'}")
+
+    try:
+        # Read session history and project notes
+        click.echo("\n📖 Reading context...")
+        sessions = read_session_history()
+        try:
+            projects = read_project_notes()
+        except FileNotFoundError:
+            click.echo("   ⚠️  Projects directory not found, continuing without projects")
+            projects = []
+
+        # Synthesize daily context
+        click.echo("🤖 Synthesizing context with Ollama...")
+        daily_context = synthesize_daily_context(
+            sessions=sessions, projects=projects, date=date_str
+        )
+
+        click.echo(f"   Themes: {len(daily_context.themes)}")
+        click.echo(f"   Decisions: {len(daily_context.decisions)}")
+        click.echo(f"   Progress: {len(daily_context.progress)}")
+
+        # Convert DailyContext to dict for generate_post
+        context_dict = {
+            "themes": daily_context.themes,
+            "decisions": daily_context.decisions,
+            "progress": daily_context.progress,
+        }
+
+        # Generate post
+        click.echo(f"\n✍️  Generating post with {model}...")
+        result = generate_post(
+            context=context_dict,
+            pillar=pillar,
+            framework=framework,
+            model=model,
+        )
+
+        click.echo(f"   Framework used: {result.framework_used}")
+        click.echo(f"   Validation score: {result.validation_score:.2f}")
+        click.echo(f"   Iterations: {result.iterations}")
+
+        # Show validation warnings if any
+        if result.violations:
+            click.echo("\n⚠️  Validation warnings:")
+            for violation in result.violations:
+                click.echo(f"   • {violation}")
+
+        # Save to database
+        db = get_db()
+        post = Post(
+            content=result.content,
+            platform=Platform.LINKEDIN,
+            status=PostStatus.DRAFT,
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+
+        click.echo(f"\n✅ Draft created (ID: {post.id})")
+        click.echo(f"\n{'='*60}")
+        click.echo("Content Preview:")
+        click.echo(f"{'='*60}")
+        # Show first 500 chars
+        preview = result.content[:500] + "..." if len(result.content) > 500 else result.content
+        click.echo(preview)
+        click.echo(f"{'='*60}")
+
+        click.echo(f"\n💡 Next steps:")
+        click.echo(f"   • Review: uv run content-engine show {post.id}")
+        click.echo(f"   • Approve: uv run content-engine approve {post.id}")
+
+        db.close()
+
+    except FileNotFoundError as e:
+        click.echo(f"❌ {e}")
+        sys.exit(1)
+    except AIError as e:
+        click.echo(f"❌ AI generation failed: {e}")
+        click.echo("\n💡 Make sure Ollama is running: ollama serve")
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to generate post: {e}")
+        logger.exception("Post generation failed")
         sys.exit(1)
 
 
