@@ -175,6 +175,57 @@ Analytics collection automatically:
 - Set `LINKEDIN_ACCESS_TOKEN` environment variable OR store token in database
 - `data/posts.jsonl` file (create with `mkdir -p data && touch data/posts.jsonl`)
 
+**posts.jsonl Schema:**
+
+Each line in `data/posts.jsonl` is a JSON object representing a single LinkedIn post:
+
+```json
+{
+  "post_id": "urn:li:share:7412668096475369472",
+  "posted_at": "2026-01-01T00:00:00",
+  "blueprint_version": "manual_v1",
+  "content": "Your post content here",
+  "metrics": {
+    "post_id": "urn:li:share:7412668096475369472",
+    "impressions": 1234,
+    "likes": 45,
+    "comments": 3,
+    "shares": 2,
+    "clicks": 67,
+    "engagement_rate": 0.0405,
+    "fetched_at": "2026-01-17T10:30:00"
+  }
+}
+```
+
+**Fields:**
+- `post_id` (string): LinkedIn share URN (e.g., "urn:li:share:7412668096475369472")
+- `posted_at` (string): ISO 8601 timestamp when post was published
+- `blueprint_version` (string): Content framework version used (e.g., "manual_v1", "STF_v1")
+- `content` (string): Full text content of the post
+- `metrics` (object, optional): Analytics data (populated after running collect-analytics)
+  - `post_id` (string): Same as parent post_id
+  - `impressions` (int): Number of times post was shown
+  - `likes` (int): Number of likes/reactions
+  - `comments` (int): Number of comments
+  - `shares` (int): Number of shares/reposts
+  - `clicks` (int): Number of clicks on post links
+  - `engagement_rate` (float): Calculated as (likes + comments + shares) / impressions
+  - `fetched_at` (string): ISO 8601 timestamp when metrics were fetched
+
+**Example: Adding a post manually**
+
+```bash
+# Add a new post to posts.jsonl (without metrics initially)
+echo '{"post_id": "urn:li:share:7412668096475369472", "posted_at": "2026-01-01T00:00:00", "blueprint_version": "manual_v1", "content": "New Year 2026 post"}' >> data/posts.jsonl
+
+# Fetch analytics for the post
+uv run content-engine collect-analytics --test-post urn:li:share:7412668096475369472
+
+# Or fetch analytics for all recent posts
+uv run content-engine collect-analytics
+```
+
 **Content Engine CLI:**
 
 ```bash
