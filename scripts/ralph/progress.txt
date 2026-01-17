@@ -466,3 +466,63 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-010 - Create BrandVoice.yaml constraint
+
+**Implemented:**
+- Created blueprints/constraints/BrandVoice.yaml with comprehensive brand voice definition
+- 5 core characteristics with examples and guidelines:
+  - technical_but_accessible
+  - authentic
+  - confident
+  - builder_mindset
+  - specificity_over_generic
+- Forbidden phrases across 4 categories (40+ phrases to avoid)
+- Style rules: narrative_voice, structure, tone, technical_communication
+- Content principles (8 core principles)
+- Validation flags: red_flags, yellow_flags, green_signals
+
+**Files changed:**
+- blueprints/constraints/BrandVoice.yaml (new)
+- tests/test_brandvoice_constraint.py (new)
+
+**Learnings:**
+- YAML parsing errors from parenthetical comments outside quotes
+- Constraints provide validation criteria for content generation
+- Each characteristic includes both good and bad examples
+- Forbidden phrases organized by category (easier to reason about)
+- Validation flags provide graduated severity levels
+
+**Codebase patterns discovered:**
+- Constraint blueprints differ from frameworks (validations vs structures)
+- Examples in constraints use good/bad pairs for clarity
+- load_constraints() function works same as load_framework()
+- Cache key pattern: "constraint:{name}" vs "framework:{platform}:{name}"
+
+**YAML gotchas fixed:**
+- Cannot put parenthetical comments after quoted strings in list items
+- Bad: `- "phrase" (comment here)` → YAML parse error
+- Good: `- "phrase (comment here)"` → parsed correctly
+- Simplified forbidden_phrases to just list strings without annotations
+
+**Tests:**
+- 10 comprehensive tests for BrandVoice constraint:
+  - YAML loading and caching
+  - Required fields validation
+  - Characteristics structure (5 core IDs)
+  - Forbidden phrases (4 categories)
+  - Style rules (4 categories)
+  - Content principles
+  - Validation flags (red/yellow/green)
+  - Examples structure (good/bad pairs)
+- pytest: PASS (155 total tests, 10 new)
+- ruff: PASS
+- mypy: Pre-existing errors only
+
+**Manual testing:**
+- uv run content-engine blueprints list ✓
+- BrandVoice shows under CONSTRAINTS ✓
+
+**Commit:** 4497e0e
+
+---
+

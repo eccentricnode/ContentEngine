@@ -147,7 +147,7 @@
         "pytest passes"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "Austin's brand voice constraints"
     },
     {
