@@ -1,75 +1,414 @@
 {
-  "branchName": "main",
+  "branchName": "ralph/phase3-semantic-blueprints",
   "userStories": [
     {
-      "id": "CE-001",
-      "title": "Session History Parser",
+      "id": "CE-BP-001",
+      "title": "Create blueprint directory structure",
       "acceptanceCriteria": [
-        "Create lib/context_capture.py module",
-        "Implement read_session_history() function that reads ~/.claude/History/Sessions/",
-        "Parse session JSON files (handle both .json and .jsonl formats)",
-        "Extract: date, duration, topics discussed, key decisions made",
-        "Return structured list of SessionSummary objects (dataclass or TypedDict)",
-        "Handle FileNotFoundError and JSON parsing errors gracefully",
-        "Add tests for session parsing (use fixture files)",
-        "uv run pytest passes"
+        "Create blueprints/ directory with subdirs: frameworks/linkedin/, workflows/, constraints/, templates/",
+        "Add blueprints/README.md explaining structure",
+        "Verify directories exist with test",
+        "pytest passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Foundation for context capture. Parse PAI session history into structured data."
+      "notes": "Foundation for all blueprint files"
     },
     {
-      "id": "CE-002",
-      "title": "Project Notes Aggregator",
+      "id": "CE-BP-002",
+      "title": "Implement blueprint_loader.py",
       "acceptanceCriteria": [
-        "Add read_project_notes() function to lib/context_capture.py",
-        "Read markdown files from ~/Documents/Folio/1-Projects/",
-        "Extract: project name, last updated, key insights, current status",
-        "Parse markdown frontmatter if present, otherwise parse headings",
-        "Return structured list of ProjectNote objects",
-        "Handle missing directories and malformed markdown",
-        "Add tests for project note parsing",
-        "uv run pytest passes"
+        "Create lib/blueprint_loader.py with load_framework(), load_workflow(), load_constraints()",
+        "Parse YAML files with PyYAML",
+        "In-memory caching for performance",
+        "Handle file not found gracefully",
+        "Type hints and docstrings",
+        "Unit tests with mocked file system",
+        "mypy + pytest pass"
       ],
       "priority": 2,
       "passes": true,
-      "notes": "Aggregate project notes from Folio for context injection."
+      "notes": "Core infrastructure for loading blueprints"
     },
     {
-      "id": "CE-003",
-      "title": "Context Synthesizer with Ollama",
+      "id": "CE-BP-003",
+      "title": "Implement template_renderer.py",
       "acceptanceCriteria": [
-        "Create lib/context_synthesizer.py module",
-        "Implement synthesize_daily_context() function",
-        "Takes SessionSummary and ProjectNote lists as input",
-        "Sends to Ollama llama3:8b with prompt: 'Summarize key themes, decisions, and progress from today. Focus on: projects worked on, decisions made, insights gained. Output JSON with keys: themes, decisions, progress'",
-        "Parse Ollama JSON response",
-        "Return DailyContext object with structured fields",
-        "Add health check for Ollama connection",
-        "Add tests with mocked Ollama responses",
-        "uv run pytest passes"
+        "Create lib/template_renderer.py with render_template()",
+        "Use pybars3 or chevron for Handlebars",
+        "Load templates from blueprints/templates/",
+        "Handle template not found",
+        "Type hints and docstrings",
+        "Unit tests with sample templates",
+        "mypy + pytest pass"
       ],
       "priority": 3,
       "passes": true,
-      "notes": "Use local LLM to synthesize raw context into structured insights."
+      "notes": "For rendering LLM prompts from Handlebars templates"
     },
     {
-      "id": "CE-004",
-      "title": "Context Storage and CLI",
+      "id": "CE-BP-004",
+      "title": "Add Blueprint cache table to database",
       "acceptanceCriteria": [
-        "Create context/ directory for storing daily context",
-        "Implement save_context() function that writes DailyContext to context/YYYY-MM-DD.json",
-        "Add CLI command: uv run content-engine capture-context",
-        "CLI orchestrates: read sessions → read projects → synthesize → save",
-        "CLI prints summary: 'Context captured: X sessions, Y projects, Z themes'",
-        "Add --date flag to capture context for specific date",
-        "Create tests for full context capture pipeline",
-        "Update README.md with context capture usage docs",
-        "uv run pytest passes"
+        "Add Blueprint model to lib/database.py (id, name, category, platform, data, version, created_at, updated_at)",
+        "Create Alembic migration",
+        "Run migration successfully",
+        "Add tests for Blueprint CRUD operations",
+        "mypy + pytest pass"
       ],
       "priority": 4,
       "passes": true,
-      "notes": "Complete the context capture pipeline with storage and CLI interface."
+      "notes": "Optional caching layer for loaded blueprints"
+    },
+    {
+      "id": "CE-BP-005",
+      "title": "Add blueprints CLI group with list command",
+      "acceptanceCriteria": [
+        "Add @cli.group() for blueprints in cli.py",
+        "Add 'list' command that shows all blueprints",
+        "Format output nicely (table or grouped by category)",
+        "Test: uv run content-engine blueprints list",
+        "mypy + pytest pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "CLI interface for blueprint management"
+    },
+    {
+      "id": "CE-BP-006",
+      "title": "Create STF.yaml framework blueprint",
+      "acceptanceCriteria": [
+        "Create blueprints/frameworks/linkedin/STF.yaml",
+        "Include: name, platform, description, structure (4 sections), validation rules, compatible_pillars, examples",
+        "Follow YAML structure from plan",
+        "Load successfully with blueprint_loader",
+        "Add test that validates YAML structure",
+        "pytest passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Storytelling Framework - Problem/Tried/Worked/Lesson"
+    },
+    {
+      "id": "CE-BP-007",
+      "title": "Create MRS.yaml framework blueprint",
+      "acceptanceCriteria": [
+        "Create blueprints/frameworks/linkedin/MRS.yaml",
+        "Include: Mistake/Realization/Shift structure",
+        "Validation rules and examples",
+        "Load successfully with blueprint_loader",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Mistake-Realization-Shift framework"
+    },
+    {
+      "id": "CE-BP-008",
+      "title": "Create SLA.yaml framework blueprint",
+      "acceptanceCriteria": [
+        "Create blueprints/frameworks/linkedin/SLA.yaml",
+        "Include: Story/Lesson/Application structure",
+        "Validation rules and examples",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Story-Lesson-Application framework"
+    },
+    {
+      "id": "CE-BP-009",
+      "title": "Create PIF.yaml framework blueprint",
+      "acceptanceCriteria": [
+        "Create blueprints/frameworks/linkedin/PIF.yaml",
+        "Include: Poll/Interactive Format structure",
+        "Validation rules for engagement posts",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Poll and interactive content framework"
+    },
+    {
+      "id": "CE-BP-010",
+      "title": "Create BrandVoice.yaml constraint",
+      "acceptanceCriteria": [
+        "Create blueprints/constraints/BrandVoice.yaml",
+        "Include: Austin's voice characteristics (technical, authentic, confident)",
+        "Forbidden phrases list (corporate jargon, hustle culture)",
+        "Style rules (first-person, specific over generic)",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Austin's brand voice constraints"
+    },
+    {
+      "id": "CE-BP-011",
+      "title": "Create ContentPillars.yaml constraint",
+      "acceptanceCriteria": [
+        "Create blueprints/constraints/ContentPillars.yaml",
+        "Include: what_building (35%), what_learning (30%), sales_tech (20%), problem_solution (15%)",
+        "Description and examples for each pillar",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Four content pillars with distribution percentages"
+    },
+    {
+      "id": "CE-BP-012",
+      "title": "Implement blueprint_engine.py with validation",
+      "acceptanceCriteria": [
+        "Create lib/blueprint_engine.py",
+        "Implement validate_content(content, framework, constraints) -> ValidationResult",
+        "Implement check_brand_voice(content) -> List[violations]",
+        "Implement select_framework(context, pillar) -> framework_name",
+        "Return violations + improvement suggestions",
+        "Type hints and docstrings",
+        "Unit tests for validation logic",
+        "mypy + pytest pass"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Core validation engine for content quality"
+    },
+    {
+      "id": "CE-BP-013",
+      "title": "Create LinkedInPost.hbs template",
+      "acceptanceCriteria": [
+        "Create blueprints/templates/LinkedInPost.hbs",
+        "Handlebars template combining context + framework + constraints",
+        "Input variables: {{context}}, {{framework}}, {{pillar}}, {{brandVoice}}",
+        "Output: Structured LLM prompt",
+        "Render successfully with template_renderer",
+        "Add test with sample data",
+        "pytest passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Prompt template for content generation"
+    },
+    {
+      "id": "CE-BP-014",
+      "title": "Implement content_generator.py",
+      "acceptanceCriteria": [
+        "Create agents/linkedin/content_generator.py",
+        "Implement generate_post(context, pillar, framework, model) -> str",
+        "Load framework blueprint",
+        "Render prompt template",
+        "Call Ollama LLM (use existing lib/ollama.py if available, or add ollama dependency)",
+        "Validate output with blueprint_engine",
+        "Return draft post OR improvement suggestions",
+        "Type hints and docstrings",
+        "Tests with mocked LLM",
+        "mypy + pytest pass"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Blueprint-based content generation"
+    },
+    {
+      "id": "CE-BP-015",
+      "title": "Add generate CLI command",
+      "acceptanceCriteria": [
+        "Add 'generate' command to cli.py",
+        "Options: --pillar (choice of 4), --framework (choice of STF/MRS/SLA/PIF), --date (optional)",
+        "Use context_synthesizer to get context for date",
+        "Call content_generator.generate_post()",
+        "Save draft to database with status=DRAFT",
+        "Print post ID and preview",
+        "Test: uv run content-engine generate --pillar what_building --framework STF",
+        "mypy + pytest pass"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "CLI interface for blueprint-based generation"
+    },
+    {
+      "id": "CE-BP-016",
+      "title": "Create SundayPowerHour.yaml workflow",
+      "acceptanceCriteria": [
+        "Create blueprints/workflows/SundayPowerHour.yaml",
+        "5 steps: Context Mining, Pillar Categorization, Framework Selection, Batch Writing, Polish & Schedule",
+        "Each step has: name, duration, inputs, outputs, prompt_template",
+        "Document batching benefits (92min context switching savings)",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "Weekly batching workflow for 10 posts"
+    },
+    {
+      "id": "CE-BP-017",
+      "title": "Create Repurposing1to10.yaml workflow",
+      "acceptanceCriteria": [
+        "Create blueprints/workflows/Repurposing1to10.yaml",
+        "One idea → 10 content pieces",
+        "Repurposing targets: LinkedIn, Twitter, blog, carousel, video, etc.",
+        "Platform-specific adaptations",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "Repurposing workflow for multi-platform content"
+    },
+    {
+      "id": "CE-BP-018",
+      "title": "Add ContentPlan table to database",
+      "acceptanceCriteria": [
+        "Add ContentPlan model to lib/database.py (id, week_start_date, pillar, framework, idea, status, created_at)",
+        "Create Alembic migration",
+        "Run migration successfully",
+        "Add tests for ContentPlan CRUD",
+        "mypy + pytest pass"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "Store planned content from workflows"
+    },
+    {
+      "id": "CE-BP-019",
+      "title": "Implement workflow executor in blueprint_engine",
+      "acceptanceCriteria": [
+        "Add execute_workflow(workflow_name, inputs) -> WorkflowResult to blueprint_engine.py",
+        "Load workflow YAML",
+        "Execute steps sequentially",
+        "Pass outputs from step N as inputs to step N+1",
+        "Return final outputs (e.g., 10 ContentPlan records for SundayPowerHour)",
+        "Type hints and docstrings",
+        "Tests with mocked LLM and database",
+        "mypy + pytest pass"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "Execute multi-step workflows"
+    },
+    {
+      "id": "CE-BP-020",
+      "title": "Add sunday-power-hour CLI command",
+      "acceptanceCriteria": [
+        "Add 'sunday-power-hour' command to cli.py",
+        "Load last 7 days of context",
+        "Execute SundayPowerHour workflow",
+        "Generate 10 ideas distributed across pillars",
+        "Create ContentPlan records",
+        "Print summary (10 ideas with pillars/frameworks)",
+        "Test: uv run content-engine sunday-power-hour",
+        "mypy + pytest pass"
+      ],
+      "priority": 20,
+      "passes": false,
+      "notes": "CLI for weekly batching workflow"
+    },
+    {
+      "id": "CE-BP-021",
+      "title": "Create PlatformRules.yaml constraint",
+      "acceptanceCriteria": [
+        "Create blueprints/constraints/PlatformRules.yaml",
+        "LinkedIn rules: 800-1200 chars ideal, 3000 max, line breaks, max 2-3 emojis",
+        "Twitter rules: 280 chars/tweet (for future)",
+        "Blog rules: long-form structure (for future)",
+        "Load successfully",
+        "Add test",
+        "pytest passes"
+      ],
+      "priority": 21,
+      "passes": false,
+      "notes": "Platform-specific content rules"
+    },
+    {
+      "id": "CE-BP-022",
+      "title": "Implement post_validator.py",
+      "acceptanceCriteria": [
+        "Create agents/linkedin/post_validator.py",
+        "Implement validate_post(post) -> ValidationReport",
+        "Check all constraints: framework structure, brand voice, platform rules",
+        "Severity levels: ERROR (must fix) vs WARNING (suggestions)",
+        "Return detailed report with violations + suggestions",
+        "Type hints and docstrings",
+        "Tests with sample posts (valid and invalid)",
+        "mypy + pytest pass"
+      ],
+      "priority": 22,
+      "passes": false,
+      "notes": "Comprehensive post validation"
+    },
+    {
+      "id": "CE-BP-023",
+      "title": "Integrate validation into generation pipeline",
+      "acceptanceCriteria": [
+        "Update content_generator.py to use iterative refinement",
+        "Generate → Validate → Refine loop (max 3 attempts)",
+        "Use violations as feedback for regeneration",
+        "Only return draft if validation passes or max attempts reached",
+        "Tests for refinement loop",
+        "mypy + pytest pass"
+      ],
+      "priority": 23,
+      "passes": false,
+      "notes": "Iterative improvement during generation"
+    },
+    {
+      "id": "CE-BP-024",
+      "title": "Add validate CLI command",
+      "acceptanceCriteria": [
+        "Add 'validate' command to cli.py",
+        "Argument: post_id",
+        "Load post from database",
+        "Run post_validator.validate_post()",
+        "Print validation report (pass/fail, violations, suggestions)",
+        "Color-code output (green=pass, yellow=warning, red=error)",
+        "Test: uv run content-engine validate <post_id>",
+        "mypy + pytest pass"
+      ],
+      "priority": 24,
+      "passes": false,
+      "notes": "CLI for post validation"
+    },
+    {
+      "id": "CE-BP-025",
+      "title": "Add blueprints show CLI command",
+      "acceptanceCriteria": [
+        "Add 'show' command to blueprints CLI group",
+        "Argument: blueprint_name",
+        "Load blueprint and display formatted YAML",
+        "Show structure, validation rules, examples",
+        "Test: uv run content-engine blueprints show STF",
+        "mypy + pytest pass"
+      ],
+      "priority": 25,
+      "passes": false,
+      "notes": "View blueprint details"
+    },
+    {
+      "id": "CE-BP-026",
+      "title": "End-to-end integration test",
+      "acceptanceCriteria": [
+        "Create integration test that runs full pipeline",
+        "Capture context → Generate post → Validate → Save draft",
+        "Test with all 4 frameworks (STF, MRS, SLA, PIF)",
+        "Test with all 4 pillars",
+        "Verify validation catches violations",
+        "All tests pass",
+        "Document test coverage in progress.txt"
+      ],
+      "priority": 26,
+      "passes": false,
+      "notes": "Verify full Phase 3 integration"
     }
   ]
 }

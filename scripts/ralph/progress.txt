@@ -1,173 +1,261 @@
-# Content Engine - Ralph Progress
+# Ralph Progress Log - Content Engine Phase 3
 
-## Phase 2: Context Capture Layer
+**Project:** ContentEngine - Semantic Blueprints
+**Started:** 2026-01-17
+**Goal:** Implement blueprint system for content framework encoding, validation, and generation
 
-**Goal:** Build autonomous context aggregation system that reads PAI session history and project notes, synthesizes with local LLM, and structures for semantic blueprint consumption.
+## Codebase Patterns
 
-**Status:** Starting Phase 2 - 4 stories to implement
+**Package Manager:**
+- Always use `uv run` prefix for Python commands
+- Install dependencies: `uv add package-name`
+- Sync environment: `uv sync`
 
----
+**File Paths:**
+- Use `pathlib.Path` and `os.path.expanduser()`
+- Blueprint files: `blueprints/frameworks/`, `blueprints/workflows/`, `blueprints/constraints/`
+- Templates: `blueprints/templates/`
 
-## 2026-01-12 - Setup
+**Database:**
+- SQLAlchemy ORM with context managers
+- Models in `lib/database.py`
+- Use `with get_session() as session:` pattern
+- Always call `session.commit()` explicitly
 
-- Created Ralph infrastructure for Content Engine
-- Added AGENTS.md with build/test patterns
-- Designed Phase 2 PRD (4 stories):
-  - CE-001: Session History Parser
-  - CE-002: Project Notes Aggregator
-  - CE-003: Context Synthesizer with Ollama
-  - CE-004: Context Storage and CLI
+**YAML Blueprints:**
+- Use PyYAML for parsing
+- Cache loaded blueprints in memory for performance
+- Validate YAML structure on load
 
-Ready for Ralph autonomous build.
+**Testing:**
+- pytest fixtures for test data in `conftest.py`
+- Mock external dependencies (LLM, file system)
+- Test both success and failure paths
 
----
+**Key Files:**
+- `lib/database.py` - Database models
+- `lib/context_synthesizer.py` - Phase 2 context capture (already implemented)
+- `cli.py` - CLI commands
+- `tests/conftest.py` - Shared test fixtures
 
-## 2026-01-12 - CE-001
-- Implemented: Session History Parser
-- Files:
-  - lib/context_capture.py (242 lines)
-  - tests/test_context_capture.py (305 lines, 19 tests)
-- Features:
-  - SessionSummary dataclass with type hints
-  - read_session_history() function with path expansion
-  - Supports both JSON and JSONL formats
-  - Extracts date, duration, topics, and key decisions
-  - Graceful error handling for missing/malformed files
-  - Comprehensive test coverage with fixtures
-- Tests: pytest ✓ (23 total, 19 new)
-- Learnings:
-  - PAI session files may be .json or .jsonl format
-  - Date parsing requires handling multiple timestamp formats (ISO, Unix)
-  - Fallback to file mtime when session metadata missing
-  - Topic/decision extraction benefits from keyword-based filtering
-  - Test isolation via tempfile.TemporaryDirectory ensures clean state
-- Commit: 26a2376
+## Architecture Overview
 
----
+**Phase 3 adds:**
+1. Blueprint system (YAML-based content frameworks)
+2. Validation engine (brand voice, platform rules)
+3. Content generator (blueprint-driven LLM prompts)
+4. Workflow executor (batching, repurposing)
 
-## 2026-01-12 - CE-002
-- Implemented: Project Notes Aggregator
-- Files:
-  - lib/context_capture.py (added 237 lines)
-  - tests/test_context_capture.py (added 265 lines, 17 new tests)
-- Features:
-  - ProjectNote dataclass with comprehensive fields
-  - read_project_notes() function with directory traversal
-  - YAML frontmatter parser (lightweight, no external deps)
-  - Markdown heading parser as fallback
-  - Extracts project name, last updated, insights, status, tags
-  - Handles malformed files gracefully
-  - Comprehensive test coverage with fixtures
-- Tests: pytest ✓ (40 total, 17 new)
-- Learnings:
-  - rglob() avoids duplicates vs glob() + glob(**/)
-  - Lightweight YAML parser using regex for key:value patterns
-  - Markdown section parsing requires tracking current heading context
-  - Frontmatter date formats vary (ISO, custom strings)
-  - File mtime as fallback when frontmatter missing
-  - Test fixtures with tempfile ensure isolation
-- Commit: 1b7589e
+**Integration with Phase 2:**
+- Context from `synthesize_daily_context()` → Blueprint prompts → LLM generation
 
 ---
 
-## 2026-01-12 - CE-003
-- Implemented: Context Synthesizer with Ollama
-- Files:
-  - lib/context_synthesizer.py (231 lines)
-  - tests/test_context_synthesizer.py (307 lines, 17 tests)
-- Features:
-  - DailyContext dataclass for structured insights
-  - synthesize_daily_context() with Ollama integration
-  - check_ollama_health() for connection validation
-  - Context summary builder (limits to 10 items)
-  - JSON format enforcement for LLM responses
-  - Parses themes, decisions, progress from LLM
-  - Error handling for connection/parsing failures
-  - Support for custom host and model
-- Tests: pytest ✓ (57 total, 17 new)
-- Learnings:
-  - Mock testing with unittest.mock for external API calls
-  - Ollama API uses /api/generate endpoint with format: json
-  - Generic Exception catching needed for mock.side_effect
-  - LLM may return non-list values, need type coercion
-  - Health check before synthesis prevents cryptic errors
-  - Context summary should be concise for token efficiency
-  - Test fixtures reduce duplication across test cases
-- Commit: ddfdb65
+# Implementation Log
+
+(Ralph will append completed stories here)
+
+## [2026-01-17] - CE-BP-001 - Create blueprint directory structure
+
+**Implemented:**
+- Created blueprints/ directory with subdirectories: frameworks/linkedin/, workflows/, constraints/, templates/
+- Added comprehensive README.md explaining blueprint system architecture
+- Created tests to verify directory structure
+
+**Files changed:**
+- blueprints/README.md (new)
+- tests/test_blueprint_structure.py (new)
+
+**Learnings:**
+- Blueprint directory provides foundation for all YAML-based content frameworks
+- README serves as documentation for blueprint types: frameworks, workflows, constraints, templates
+- Test ensures directory structure exists for subsequent blueprint file creation
+
+**Tests:**
+- mypy: PASS
+- ruff: PASS
+- pytest: PASS (2 new tests added)
+
+**Commit:** 68a2264
 
 ---
 
-## 2026-01-12 - CE-004
-- Implemented: Context Storage and CLI
-- Files:
-  - lib/context_synthesizer.py (added save_context function)
-  - cli.py (added capture-context command)
-  - tests/test_context_synthesizer.py (added 5 tests, 62 total)
-  - README.md (updated with Phase 2 complete status and usage docs)
-  - context/ directory created for JSON storage
-- Features:
-  - save_context() writes DailyContext to JSON with date-based filename
-  - capture-context CLI command orchestrates full pipeline
-  - Pipeline: read sessions → read projects → synthesize → save
-  - --date flag for capturing context for specific dates
-  - --sessions-dir, --projects-dir, --output-dir options
-  - CLI prints summary (sessions, projects, themes, decisions, progress)
-  - Shows key themes preview after capture
-  - Comprehensive error handling (missing dirs, Ollama errors)
-  - Directory creation with parents=True, exist_ok=True
-- Tests: pytest ✓ (62 total, 5 new)
-- Learnings:
-  - dataclasses.asdict() for JSON serialization
-  - default=str in json.dump() handles datetime objects
-  - Click CLI groups allow subcommands in same file
-  - Graceful degradation when projects dir missing
-  - User-friendly error messages for Ollama connection issues
-  - Context files overwrite by design (idempotent)
-- Commit: 99149f8
+## [2026-01-17] - CE-BP-002 - Implement blueprint_loader.py
+
+**Implemented:**
+- Created lib/blueprint_loader.py with comprehensive blueprint loading system
+- load_framework(name, platform) - Load framework blueprints with platform support
+- load_workflow(name) - Load workflow blueprints
+- load_constraints(name) - Load constraint blueprints
+- clear_cache() - Cache management (full and selective invalidation)
+- list_blueprints() - Blueprint discovery across all categories
+- In-memory caching with cache key pattern: "{type}:{platform}:{name}"
+
+**Files changed:**
+- lib/blueprint_loader.py (new)
+- tests/test_blueprint_loader.py (new)
+- pyproject.toml (added pyyaml, types-pyyaml)
+- uv.lock (updated)
+
+**Learnings:**
+- PyYAML safe_load returns Any type - need cast() for mypy compliance
+- Cache invalidation supports both full clear and selective key removal
+- Monkeypatch in pytest allows mocking get_blueprints_dir() for testing
+- YAML parsing errors need to be caught and re-raised with context
+- Blueprint discovery walks directory structure to find all YAML files
+
+**Tests:**
+- 13 comprehensive tests covering:
+  - Successful loading of all blueprint types
+  - File not found error handling
+  - Invalid YAML error handling
+  - Cache behavior (hit/miss/invalidation)
+  - Selective cache clearing
+  - Blueprint listing (all and filtered)
+- mypy: PASS
+- ruff: PASS
+- pytest: PASS (77 total tests, 13 new)
+
+**Commit:** 7fbf034
 
 ---
 
-## Phase 2 Summary
+## [2026-01-17] - CE-BP-003 - Implement template_renderer.py
 
-**Status:** COMPLETE - All 4 stories implemented and tested (62 tests pass)
+**Implemented:**
+- Created lib/template_renderer.py with Handlebars-style template rendering
+- render_template(name, context) - Load and render template from blueprints/templates/
+- render_template_string(template, context) - Render template string directly
+- get_templates_dir() - Helper to get templates directory path
+- Chose Chevron over pybars3 (simpler, well-maintained, Mustache-compatible)
 
-**Deliverables:**
-- Session History Parser (CE-001)
-- Project Notes Aggregator (CE-002)
-- Context Synthesizer with Ollama (CE-003)
-- Context Storage and CLI (CE-004)
+**Files changed:**
+- lib/template_renderer.py (new)
+- tests/test_template_renderer.py (new)
+- pyproject.toml (added chevron)
+- uv.lock (updated)
 
-**Architecture:**
+**Learnings:**
+- Chevron uses Mustache syntax, not full Handlebars (simpler)
+- Loop syntax: {{#items}}{{.}}{{/items}} (not {{#each}})
+- Conditional syntax: {{#condition}}...{{/condition}} (not {{#if}})
+- Chevron escapes HTML entities by default (& becomes &amp;)
+- Missing variables render as empty strings (graceful degradation)
+- cast() needed for mypy since chevron.render returns Any
+- type: ignore[import-untyped] needed for chevron import
+
+**Codebase patterns discovered:**
+- Mustache {{.}} refers to current item in loop iteration
+- {{^condition}} is inverted section (renders if false/empty)
+- {{#items}} iterates over lists, {{#object}} checks truthiness
+- Nested objects accessed with dot notation: {{user.name}}
+
+**Tests:**
+- 12 comprehensive tests covering:
+  - Simple and complex templates
+  - Loops, conditionals, nested objects
+  - Error handling (file not found, missing variables)
+  - HTML escaping behavior
+  - Unicode support
+- mypy: PASS
+- ruff: PASS
+- pytest: PASS (89 total tests, 12 new)
+
+**Commit:** 7b02b40
+
+---
+
+## [2026-01-17] - CE-BP-004 - Add Blueprint cache table to database
+
+**Implemented:**
+- Added Blueprint model to lib/database.py with all required fields
+- id, name, category, platform (nullable), data (JSON), version, timestamps
+- Created Alembic migration 4864d1c47cec
+- Successfully ran migration to create blueprints table in SQLite
+
+**Files changed:**
+- lib/database.py (added Blueprint model, imported JSON from sqlalchemy)
+- alembic/versions/4864d1c47cec_add_blueprint_table_for_blueprint_.py (new migration)
+- tests/test_blueprint_model.py (new test file)
+
+**Learnings:**
+- SQLAlchemy JSON column type stores Python dicts/lists as JSON in SQLite
+- Alembic --autogenerate correctly detects new model and generates migration
+- setattr() avoids mypy assignment errors when updating Column attributes
+- Platform field is nullable for workflows/constraints (only frameworks have platform)
+- JSON data persists correctly including nested objects and arrays
+- datetime.utcnow() generates deprecation warnings in SQLAlchemy (use datetime.now(UTC) in future)
+
+**Codebase patterns discovered:**
+- Use SessionLocal() for database sessions, commit explicitly
+- db.refresh() after commit to reload model with updated timestamps
+- JSON column allows complex nested data structures
+- Alembic migrations maintain schema version history
+
+**Tests:**
+- 8 comprehensive tests for Blueprint CRUD:
+  - Create, read, update, delete operations
+  - Query by category
+  - NULL platform handling
+  - Complex nested JSON persistence
+  - repr method
+- pytest: PASS (97 total tests, 8 new)
+
+**Note:** Pre-existing mypy errors in database.py (Session name conflict) 
+not addressed as they're unrelated to this story.
+
+**Commit:** f6d9597
+
+---
+
+## [2026-01-17] - CE-BP-005 - Add blueprints CLI group with list command
+
+**Implemented:**
+- Added blueprints CLI command group to cli.py
+- Implemented `content-engine blueprints list` command
+- Optional --category filter (frameworks/workflows/constraints)
+- Organized output with category grouping and formatting
+
+**Files changed:**
+- cli.py (added blueprints group, list command)
+- tests/test_blueprints_cli.py (new CLI tests)
+
+**Learnings:**
+- Click's @cli.group() creates command groups (like git has subcommands)
+- CliRunner from click.testing allows testing CLI commands without actual execution
+- Monkeypatch can mock blueprint_loader.get_blueprints_dir() for isolated testing
+- sorted() on dict.items() ensures consistent category ordering in output
+- Optional[] type hint needed for click.option with default=None
+
+**CLI output format:**
 ```
-Session History (JSON/JSONL)
-         ↓
-    read_session_history()
-         ↓
-   SessionSummary[]
-         ↓
-         ├→ synthesize_daily_context() ← Ollama llama3:8b
-         ↓
-Project Notes (Markdown)
-         ↓
-    read_project_notes()
-         ↓
-    ProjectNote[]
-         ↓
-    DailyContext (themes, decisions, progress)
-         ↓
-    save_context()
-         ↓
-context/YYYY-MM-DD.json
+📋 Available Blueprints
+
+  FRAMEWORKS:
+    • linkedin/STF
+    (none)
+
+  WORKFLOWS:
+    • SundayPowerHour
+
+  CONSTRAINTS:
+    • BrandVoice
 ```
 
-**Key Achievements:**
-- Zero external dependencies for frontmatter/markdown parsing
-- Comprehensive error handling throughout pipeline
-- Full test coverage with mocks for external services
-- CLI interface for easy daily operation
-- Flexible directory configuration via flags
-- Structured JSON output for Phase 3 consumption
+**Tests:**
+- 4 CLI tests using Click's CliRunner:
+  - Empty list (no blueprints exist yet)
+  - Category filtering
+  - List with mocked YAML files
+  - Help command output
+- pytest: PASS (101 total tests, 4 new)
 
-**Next Phase:** Phase 3 - Semantic Blueprints
+**Manual testing:**
+- uv run content-engine blueprints list ✓
+- uv run content-engine blueprints list --category frameworks ✓
+- uv run content-engine blueprints --help ✓
+
+**Commit:** 15e49f2
 
 ---
+
