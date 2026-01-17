@@ -376,7 +376,7 @@
         "mypy + pytest pass"
       ],
       "priority": 24,
-      "passes": false,
+      "passes": true,
       "notes": "CLI for post validation"
     },
     {
