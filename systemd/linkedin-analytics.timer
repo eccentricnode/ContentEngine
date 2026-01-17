@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily LinkedIn Analytics Collection Timer
+Requires=linkedin-analytics.service
+
+[Timer]
+# Run daily at 10:00 AM
+OnCalendar=daily
+OnCalendar=10:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

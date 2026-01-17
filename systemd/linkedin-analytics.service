@@ -1,0 +1,17 @@
+[Unit]
+Description=LinkedIn Analytics Collection
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ajohn/ContentEngine
+Environment="PATH=/home/ajohn/.cargo/bin:/usr/bin:/bin"
+Environment="LINKEDIN_ACCESS_TOKEN=your_token_here"
+ExecStart=/home/ajohn/.cargo/bin/uv run content-engine collect-analytics
+
+# Logging
+StandardOutput=append:/home/ajohn/ContentEngine/analytics.log
+StandardError=append:/home/ajohn/ContentEngine/analytics-error.log
+
+[Install]
+WantedBy=default.target
