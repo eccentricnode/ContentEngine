@@ -247,7 +247,7 @@
         "pytest passes"
       ],
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "notes": "Weekly batching workflow for 10 posts"
     },
     {

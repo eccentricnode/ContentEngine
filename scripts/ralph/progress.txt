@@ -776,3 +776,60 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-016 - Create SundayPowerHour.yaml workflow
+
+**Implemented:**
+- Created comprehensive SundayPowerHour.yaml workflow blueprint
+- 5 sequential steps with detailed prompt templates
+- Documented batching benefits (92 min context switching savings)
+- Example output structure showing pillar distribution
+
+**Files changed:**
+- blueprints/workflows/SundayPowerHour.yaml (new)
+- tests/test_sundaypowerhour_workflow.py (new - 19 tests)
+
+**Learnings:**
+- Workflow YAML structure different from frameworks: steps as list, not sections
+- Each step needs: id, name, duration_minutes, description, inputs, outputs, prompt_template
+- Mustache prompt templates allow LLM integration at each step
+- Benefits documentation quantifies value proposition (92 min savings)
+- Example output provides concrete success criteria
+
+**Codebase patterns discovered:**
+- Workflow steps use sequential IDs: context_mining → pillar_categorization → framework_selection → batch_writing → polish_and_schedule
+- Duration estimates help users plan batching sessions
+- Process field (list) documents multi-step execution within a step
+- Pillar distribution targets (35/30/20/15%) encoded in prompt templates
+- Success criteria as list provides clear completion checkboxes
+
+**Workflow Design:**
+- Step 1 (15 min): Mine 15-20 content ideas from sessions/projects
+- Step 2 (10 min): Categorize to pillars, select top 10
+- Step 3 (5 min): Assign STF/MRS/SLA/PIF framework to each
+- Step 4 (60 min): Generate all 10 posts with validation (deep focus)
+- Step 5 (10 min): Polish low-scoring posts, create schedule
+
+**Batching Mathematics:**
+- Traditional: 10 posts × 10 min context switching = 100 min overhead
+- Batching: 1 session × 8 min = 8 min overhead
+- Net savings: 92 minutes per week
+
+**Tests:**
+- 19 comprehensive tests for SundayPowerHour workflow:
+  - YAML loading and structure
+  - Required fields (name, description, platform, steps, benefits)
+  - 5 steps with correct IDs and order
+  - Step metadata validation (duration, inputs, outputs)
+  - Prompt template Mustache syntax
+  - Benefits documentation (92 min savings, additional benefits)
+  - Prerequisites and success criteria
+  - Example output structure
+  - Pillar distribution percentages
+  - Workflow caching behavior
+- pytest: PASS (19 new tests, 229 total)
+- ruff: PASS (clean)
+
+**Commit:** 9cadbb5
+
+---
+
