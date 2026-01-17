@@ -16,6 +16,7 @@ from lib.blueprint_loader import list_blueprints
 from lib.blueprint_engine import execute_workflow
 from agents.linkedin.post import post_to_linkedin
 from agents.linkedin.content_generator import generate_post
+from agents.linkedin.post_validator import validate_post
 
 
 logger = setup_logger(__name__)
@@ -628,6 +629,89 @@ def sunday_power_hour() -> None:
     except Exception as e:
         click.echo(f"\n❌ Failed to execute Sunday Power Hour: {e}")
         logger.exception("Sunday Power Hour failed")
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("post_id", type=int)
+@click.option(
+    "--framework",
+    type=click.Choice(["STF", "MRS", "SLA", "PIF"]),
+    default="STF",
+    help="Framework to validate against",
+)
+def validate(post_id: int, framework: str) -> None:
+    """Validate a post against all constraints.
+
+    Checks framework structure, brand voice, and platform rules.
+    Provides detailed feedback with error/warning/suggestion severity levels.
+    """
+    try:
+        db = get_db()
+
+        # Load post
+        post = db.get(Post, post_id)
+        if not post:
+            click.echo(click.style(f"\n❌ Post {post_id} not found", fg="red"))
+            sys.exit(1)
+
+        # Validate post
+        report = validate_post(post, framework=framework)
+
+        # Print header
+        click.echo(f"\n{'='*60}")
+        click.echo(f"Validation Report - Post #{post_id}")
+        click.echo(f"Framework: {framework}")
+        click.echo(f"{'='*60}\n")
+
+        # Print overall status
+        if report.is_valid:
+            click.echo(click.style("✅ PASS", fg="green", bold=True))
+        else:
+            click.echo(click.style("❌ FAIL", fg="red", bold=True))
+
+        click.echo(f"Validation Score: {report.score:.2f}/1.00\n")
+
+        # Print violations by severity
+        if report.errors:
+            click.echo(click.style("🔴 ERRORS (must fix):", fg="red", bold=True))
+            for error in report.errors:
+                click.echo(f"  • {error.message}")
+                if error.suggestion:
+                    click.echo(click.style(f"    → {error.suggestion}", fg="yellow"))
+            click.echo()
+
+        if report.warnings:
+            click.echo(click.style("🟡 WARNINGS (should fix):", fg="yellow", bold=True))
+            for warning in report.warnings:
+                click.echo(f"  • {warning.message}")
+                if warning.suggestion:
+                    click.echo(click.style(f"    → {warning.suggestion}", fg="cyan"))
+            click.echo()
+
+        if report.suggestions:
+            click.echo(click.style("💡 SUGGESTIONS (optional):", fg="cyan", bold=True))
+            for suggestion in report.suggestions:
+                click.echo(f"  • {suggestion.message}")
+                if suggestion.suggestion:
+                    click.echo(click.style(f"    → {suggestion.suggestion}", fg="blue"))
+            click.echo()
+
+        # Print summary
+        if not report.violations:
+            click.echo(click.style("🎉 Perfect! No issues found.", fg="green"))
+        else:
+            click.echo(f"Total violations: {len(report.violations)}")
+            click.echo(f"  Errors: {len(report.errors)}")
+            click.echo(f"  Warnings: {len(report.warnings)}")
+            click.echo(f"  Suggestions: {len(report.suggestions)}")
+
+        # Exit with appropriate code
+        sys.exit(0 if report.is_valid else 1)
+
+    except Exception as e:
+        click.echo(click.style(f"\n❌ Validation failed: {e}", fg="red"))
+        logger.exception("Validation failed")
         sys.exit(1)
 
 
