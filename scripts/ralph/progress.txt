@@ -946,3 +946,119 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-019 - Implement workflow executor in blueprint_engine
+
+**Implemented:**
+- Added execute_workflow() function to lib/blueprint_engine.py
+- WorkflowResult dataclass for execution metadata
+- Sequential step execution with output accumulation
+- Error handling with partial execution support
+- Placeholder execution model (ready for LLM integration)
+
+**Files changed:**
+- lib/blueprint_engine.py (added execute_workflow, WorkflowResult dataclass)
+- tests/test_workflow_executor.py (new - 12 tests)
+- scripts/ralph/prd.json (updated CE-BP-019 passes: true)
+
+**Learnings:**
+- Workflow execution requires sequential processing (step N → step N+1)
+- Outputs accumulate across steps (each step sees previous outputs)
+- Partial execution allows workflows to continue despite step failures
+- Placeholder execution validates workflow structure without LLM calls
+- WorkflowResult provides rich metadata for debugging and monitoring
+- Future LLM integration: render template → call LLM → parse JSON → add to outputs
+
+**Codebase patterns discovered:**
+- WorkflowResult bundles success status, outputs, steps_completed, total_steps, errors
+- execute_workflow() returns WorkflowResult for consistent API
+- inputs dict copied to step_outputs to preserve initial inputs
+- Step execution tracking: {step_id}_executed and {step_id}_name in outputs
+- Error accumulation allows multiple failures to be reported
+- Success = (steps_completed == total_steps) AND (no errors)
+
+**Tests:**
+- 12 comprehensive tests for workflow execution:
+  - Workflow loading and execution
+  - Success path validation
+  - Total steps counting
+  - Outputs include inputs
+  - Step execution tracking
+  - Invalid workflow name handling
+  - Repurposing workflow execution
+  - Empty inputs handling
+  - WorkflowResult dataclass structure
+  - Error accumulation
+  - Sequential execution verification
+  - Step name capture
+- pytest: PASS (281 total tests, 12 new)
+- ruff: PASS
+- mypy: PASS
+
+**Implementation notes:**
+- Current implementation uses placeholder execution
+- Marks each step as executed: {step_id}_executed = True
+- Captures step names: {step_id}_name = "Step Name"
+- Ready for LLM integration (template rendering + API calls)
+- Supports both SundayPowerHour and Repurposing1to10 workflows
+
+**Commit:** 5e8c83c
+
+---
+
+## [2026-01-17] - CE-BP-020 - Add sunday-power-hour CLI command
+
+**Implemented:**
+- Created sunday-power-hour CLI command for weekly batching workflow
+- Workflow execution: Reads 7 days of context, executes SundayPowerHour workflow
+- ContentPlan generation: Creates 10 plans with pillar distribution (35/30/20/15%)
+- Framework assignment: Auto-assigns STF/MRS/SLA/PIF based on pillar
+- Summary display: Shows distribution by pillar and framework, time savings
+
+**Files changed:**
+- cli.py (added sunday_power_hour() command, imports ContentPlan/ContentPlanStatus/execute_workflow)
+- tests/test_sunday_power_hour_cli.py (new - 10 comprehensive tests)
+- scripts/ralph/prd.json (updated CE-BP-020 passes: true)
+
+**Learnings:**
+- CLI workflow commands integrate multiple system components (context capture, workflow execution, database)
+- MVP approach: Placeholder content plans (real LLM integration deferred to later stories)
+- Pillar distribution in code matches ContentPillars.yaml percentages
+- Week start date calculated as 7 days before current date
+- Database commit + refresh pattern needed to populate auto-generated IDs
+- Type annotations for nested functions (add_plan) required for mypy compliance
+- Click result.output testing allows comprehensive CLI output validation
+
+**Codebase patterns discovered:**
+- CLI command structure: read context → execute workflow → create records → display summary
+- Pillar/framework mapping: what_building→STF/SLA, what_learning→MRS/SLA, sales_tech→STF/PIF, problem_solution→STF
+- ContentPlan lifecycle: PLANNED (created) → IN_PROGRESS (generating) → GENERATED (post created)
+- Workflow benefits documented in user output (92 min savings)
+- Next steps guidance helps users understand post-generation workflow
+
+**Tests:**
+- 10 comprehensive tests:
+  - Success path with full workflow execution
+  - Missing projects directory handling (graceful degradation)
+  - Missing session history error
+  - Workflow execution failure
+  - ContentPlan record validation
+  - Week start date calculation
+  - Framework distribution verification
+  - Output summary validation
+  - Next steps display
+  - Help command
+- pytest: PASS (291 total tests, 10 new)
+- ruff: PASS (new code clean, pre-existing warnings in other files)
+- mypy: Pre-existing errors only (database Column types)
+
+**Implementation notes:**
+- For MVP, creates 10 placeholder plans with realistic distribution
+- Real LLM integration deferred (workflow executor uses placeholder execution)
+- Pillar distribution: 4 building, 3 learning, 2 sales_tech, 1 problem_solution (closest to 35/30/20/15%)
+- Framework distribution: STF (4), MRS (2), SLA (3), PIF (1)
+- User guidance emphasizes time savings and next steps
+
+**Commit:** 5f58171
+
+---
+

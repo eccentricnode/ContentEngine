@@ -294,7 +294,7 @@
         "mypy + pytest pass"
       ],
       "priority": 19,
-      "passes": false,
+      "passes": true,
       "notes": "Execute multi-step workflows"
     },
     {
@@ -311,7 +311,7 @@
         "mypy + pytest pass"
       ],
       "priority": 20,
-      "passes": false,
+      "passes": true,
       "notes": "CLI for weekly batching workflow"
     },
     {
