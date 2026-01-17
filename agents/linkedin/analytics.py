@@ -50,8 +50,10 @@ class LinkedInAnalytics:
         """
         Fetch analytics for a specific post.
 
+        Tries multiple endpoints to support both personal (UGC) and organization posts.
+
         Args:
-            share_urn: LinkedIn share URN (e.g., "urn:li:share:7412668096475369472")
+            share_urn: LinkedIn share URN (e.g., "urn:li:share:7412668096475369472" or "urn:li:ugcPost:...")
 
         Returns:
             PostMetrics object or None if fetch fails
@@ -59,8 +61,64 @@ class LinkedInAnalytics:
         # Extract share ID from URN
         share_id = share_urn.split(":")[-1]
 
-        # LinkedIn Analytics API endpoint
+        # Try UGC (personal post) analytics first
+        # https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/ugc-post-api
+        try:
+            metrics = self._try_ugc_analytics(share_urn, share_id)
+            if metrics:
+                return metrics
+        except Exception as e:
+            print(f"  UGC endpoint failed: {e}")
+
+        # Try organization share statistics
         # https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/organizations/share-statistics
+        try:
+            metrics = self._try_organization_analytics(share_urn, share_id)
+            if metrics:
+                return metrics
+        except Exception as e:
+            print(f"  Organization endpoint failed: {e}")
+
+        return None
+
+    def _try_ugc_analytics(self, share_urn: str, share_id: str) -> Optional[PostMetrics]:
+        """Try fetching analytics using UGC post endpoint (for personal posts)"""
+        # UGC endpoint for personal posts
+        url = f"{self.base_url}/socialMetadata/{share_urn}"
+
+        try:
+            response = requests.get(url, headers=self.headers, timeout=10)
+            response.raise_for_status()
+
+            data = response.json()
+
+            # Extract metrics from UGC response
+            total_impressions = data.get("impressions", 0)
+            likes = data.get("numLikes", 0)
+            comments = data.get("numComments", 0)
+            shares = data.get("numShares", 0)
+            clicks = data.get("clicks", 0)
+
+            total_engagement = likes + comments + shares
+            engagement_rate = (
+                total_engagement / total_impressions if total_impressions > 0 else 0.0
+            )
+
+            return PostMetrics(
+                post_id=share_urn,
+                impressions=total_impressions,
+                likes=likes,
+                comments=comments,
+                shares=shares,
+                clicks=clicks,
+                engagement_rate=engagement_rate,
+                fetched_at=datetime.now().isoformat(),
+            )
+        except requests.exceptions.RequestException:
+            return None
+
+    def _try_organization_analytics(self, share_urn: str, share_id: str) -> Optional[PostMetrics]:
+        """Try fetching analytics using organization share statistics endpoint"""
         url = f"{self.base_url}/organizationalEntityShareStatistics"
         params = {
             "q": "share",
@@ -107,8 +165,7 @@ class LinkedInAnalytics:
 
             return None
 
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching analytics for {share_urn}: {e}")
+        except requests.exceptions.RequestException:
             return None
 
     def save_post_with_metrics(self, post: Post, filepath: Path):
@@ -224,10 +281,12 @@ def main():
         print("  update                  - Update analytics for recent posts")
         sys.exit(1)
 
-    # Load access token from environment
-    access_token = os.getenv("LINKEDIN_ACCESS_TOKEN")
+    # Load access token from environment (separate app from posting)
+    access_token = os.getenv("LINKEDIN_ANALYTICS_ACCESS_TOKEN")
     if not access_token:
-        print("Error: LINKEDIN_ACCESS_TOKEN environment variable not set")
+        print("Error: LINKEDIN_ANALYTICS_ACCESS_TOKEN environment variable not set")
+        print("\nNote: Analytics requires a separate LinkedIn app with analytics permissions.")
+        print("See README.md for setup instructions.")
         sys.exit(1)
 
     analytics = LinkedInAnalytics(access_token)

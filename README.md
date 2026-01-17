@@ -45,8 +45,8 @@ Content Engine is a multi-phase AI system that:
 - **Package Manager:** uv (fast, modern Python tooling)
 - **AI Integration:**
   - **Local:** Ollama (llama3:8b) - Free development/testing
-  - **Production:** AWS Bedrock (Claude Haiku, Llama 3.3 70B) - Cost-optimized
-  - **See:** [AWS_BEDROCK_INTEGRATION.md](AWS_BEDROCK_INTEGRATION.md) for setup & costs
+  - **Production:** AWS Bedrock (Claude Haiku, Llama 3.3 70B) - ~$0.004/post
+  - **See:** `~/Documents/Folio/1-Projects/ContentEngine/` for setup guide
 - **Database:** SQLite (development) → PostgreSQL (production)
 - **Deployment:** Self-hosted on local server (192.168.0.5)
 - **Testing:** pytest (403 tests passing)
@@ -371,10 +371,9 @@ This project demonstrates:
   - Blueprint-driven content frameworks (STF, MRS, SLA, PIF)
   - RAG-based fact-checking prevents hallucinations
 - **Production AI Integration:** AWS Bedrock deployment
-  - Cost optimization: $0.12/month for 30 posts
+  - Cost optimization: $0.12/month for 30 posts (vs $50/post manual)
   - Multi-model orchestration (Llama drafts, Claude validates)
-  - Safety: Budget caps, rate limiting, usage tracking
-  - See: [AWS_BEDROCK_INTEGRATION.md](AWS_BEDROCK_INTEGRATION.md)
+  - Setup guide: `~/Documents/Folio/1-Projects/ContentEngine/`
 - **OAuth Implementation:** Secure LinkedIn API integration
 - **Production Infrastructure:** Error handling, logging, deployment automation
 - **Self-Improving Systems:** Engagement feedback loops (Phase 6)

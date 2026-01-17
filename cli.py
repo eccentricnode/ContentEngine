@@ -842,5 +842,90 @@ def validate(post_id: int, framework: str) -> None:
         sys.exit(1)
 
 
+@cli.command("collect-analytics")
+@click.option("--days-back", default=7, type=int, help="Fetch analytics for posts from last N days")
+@click.option("--test-post", type=str, help="Fetch analytics for a single post URN")
+def collect_analytics(days_back: int, test_post: Optional[str]) -> None:
+    """Collect LinkedIn post analytics and update posts.jsonl."""
+    import os
+    from pathlib import Path
+    from agents.linkedin.analytics import LinkedInAnalytics
+
+    click.echo("=" * 60)
+    click.echo("LinkedIn Analytics Collection")
+    click.echo("=" * 60)
+
+    # Load access token
+    access_token = os.getenv("LINKEDIN_ACCESS_TOKEN")
+    if not access_token:
+        # Try loading from database
+        try:
+            db = get_db()
+            stmt = select(OAuthToken).where(OAuthToken.platform == Platform.LINKEDIN)
+            result = db.execute(stmt)
+            oauth_token = result.scalar_one_or_none()
+            if oauth_token:
+                access_token = oauth_token.access_token
+        except Exception:
+            pass
+
+    if not access_token:
+        click.echo(click.style("\n❌ Error: LINKEDIN_ACCESS_TOKEN not found", fg="red"))
+        click.echo("\nPlease set the environment variable:")
+        click.echo("  export LINKEDIN_ACCESS_TOKEN='your_token_here'")
+        click.echo("\nOr store it in the database:")
+        click.echo("  uv run content-engine oauth linkedin")
+        sys.exit(1)
+
+    analytics = LinkedInAnalytics(access_token)
+
+    # Test single post
+    if test_post:
+        click.echo(f"\n📊 Fetching analytics for: {test_post}")
+        metrics = analytics.get_post_analytics(test_post)
+
+        if metrics:
+            click.echo(click.style("\n✓ Analytics fetched successfully!", fg="green"))
+            click.echo(f"  Impressions: {metrics.impressions:,}")
+            click.echo(f"  Likes: {metrics.likes}")
+            click.echo(f"  Comments: {metrics.comments}")
+            click.echo(f"  Shares: {metrics.shares}")
+            click.echo(f"  Clicks: {metrics.clicks}")
+            click.echo(f"  Engagement Rate: {metrics.engagement_rate:.2%}")
+        else:
+            click.echo(click.style("\n✗ Failed to fetch analytics", fg="red"))
+            click.echo("  Make sure:")
+            click.echo("  - The post URN is correct")
+            click.echo("  - Your access token has analytics permissions")
+            click.echo("  - The post exists and you have access to it")
+            sys.exit(1)
+    else:
+        # Update all posts
+        posts_file = Path("data/posts.jsonl")
+
+        if not posts_file.exists():
+            click.echo(click.style(f"\n❌ Error: {posts_file} not found", fg="red"))
+            click.echo("\nCreate the file first or run:")
+            click.echo("  mkdir -p data && touch data/posts.jsonl")
+            sys.exit(1)
+
+        click.echo(f"\n📊 Fetching analytics for posts from last {days_back} days...")
+        click.echo(f"   File: {posts_file}")
+
+        try:
+            updated_count = analytics.update_posts_with_analytics(posts_file, days_back=days_back)
+            click.echo(click.style(f"\n✓ Updated analytics for {updated_count} posts", fg="green"))
+
+            if updated_count == 0:
+                click.echo("\n💡 No posts needed updates. This could mean:")
+                click.echo("  - All recent posts already have analytics")
+                click.echo("  - No posts in the specified time window")
+                click.echo("  - Posts file is empty")
+        except Exception as e:
+            click.echo(click.style(f"\n❌ Error updating analytics: {e}", fg="red"))
+            logger.exception("Analytics collection failed")
+            sys.exit(1)
+
+
 if __name__ == "__main__":
     cli()
