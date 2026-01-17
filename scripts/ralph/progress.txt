@@ -629,3 +629,50 @@ not addressed as they're unrelated to this story.
 
 ---
 
+## [2026-01-17] - CE-BP-013 - Create LinkedInPost.hbs template
+
+**Implemented:**
+- Created blueprints/templates/LinkedInPost.hbs Mustache template
+- Structured LLM prompt with 5 sections: CONTEXT, CONTENT PILLAR, FRAMEWORK, BRAND VOICE CONSTRAINTS, VALIDATION REQUIREMENTS, TASK
+- Template variables for context (themes/decisions/progress), pillar, framework, brand voice, validation rules
+- Clear instructions for LLM: follow framework structure, match brand voice, avoid forbidden phrases, stay within char limits
+
+**Files changed:**
+- blueprints/templates/LinkedInPost.hbs (new)
+- tests/test_linkedin_template.py (new)
+- scripts/ralph/prd.json (updated CE-BP-013 passes: true)
+
+**Learnings:**
+- Mustache template syntax: {{#array}}...{{/array}} for iteration, {{variable}} for values
+- BrandVoice characteristics is a list of objects (with "id" field), not a dict
+- BrandVoice style_rules is a dict where values are lists of strings
+- Template must handle both dict and list structures from YAML blueprints
+- Rendering complex nested data requires careful context preparation
+- Template combines multiple blueprints (framework, pillar, brand voice) into single prompt
+
+**Codebase patterns discovered:**
+- Template context preparation transforms YAML structures into renderable format
+- Characteristics: list comprehension with char["id"] and char["description"]
+- Style rules: dict iteration with ", ".join(rules) for list values
+- Forbidden phrases: flattened from dict of categories to simple list
+- Framework sections passed directly from YAML structure
+- Template variables match what LLM needs to generate quality content
+
+**Tests:**
+- 8 comprehensive tests for LinkedInPost template:
+  - Renders successfully with full context
+  - Includes context sections (themes/decisions/progress)
+  - Includes framework sections (all 4 sections for STF)
+  - Includes brand voice (characteristics, forbidden phrases, style)
+  - Includes validation requirements (char limits, section counts)
+  - Works with MRS framework
+  - Works with PIF framework
+  - Handles empty context gracefully
+- pytest: PASS (196 total tests, 8 new)
+- ruff: PASS (removed unused variables)
+- mypy: PASS
+
+**Commit:** 5e468d4
+
+---
+
