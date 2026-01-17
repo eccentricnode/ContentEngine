@@ -1651,3 +1651,62 @@ for story completion. Schema documentation and file creation are complete.
 
 ---
 
+## [2026-01-17] - AN-004 - Add analytics dashboard script
+
+**Implemented:**
+- Created comprehensive analytics dashboard script for LinkedIn posts
+- Display summary table with post ID (truncated), date, engagement rate, likes, comments
+- Calculate and display average engagement rate across all posts
+- Identify best and worst performing posts with detailed metrics
+- CSV export functionality with --export-csv flag
+- Graceful handling of missing metrics (prompts to run collect-analytics)
+- Updated README.md with Analytics Dashboard section
+
+**Files changed:**
+- scripts/analytics_dashboard.py (new - 219 lines)
+- tests/test_analytics_dashboard.py (new - 24 tests, 557 lines)
+- README.md (added Analytics Dashboard documentation)
+- scripts/ralph/prd.json (updated AN-004 passes: true)
+
+**Learnings:**
+- Dashboard script uses direct imports from agents.linkedin.analytics module
+- sys.path.insert(0, ...) pattern allows importing from parent directory
+- Truncation with ellipsis: text[:max_length - 3] + "..." ensures fixed width
+- Best/worst tracking: maintain best_post/worst_post variables during iteration
+- CSV export: csv.DictWriter with explicit fieldnames ensures column order
+- Graceful degradation: check if posts have metrics, prompt user if none found
+- Display formatting: use fixed-width columns with f-strings for alignment
+
+**Codebase patterns discovered:**
+- Dashboard pattern: load data → display table → calculate summary stats → show best/worst
+- CSV export pattern: DictWriter with explicit fieldnames, write header then rows
+- Truncation display: truncate long IDs for terminal display but preserve full IDs in data
+- Summary statistics: total posts, posts with analytics, average engagement, extremes
+- User guidance: when no metrics, suggest running collect-analytics command
+- Test organization: group tests by function (LoadPosts, TruncatePostId, FormatEngagementRate, etc.)
+
+**Dashboard Features:**
+- Summary table with 5 columns (Post ID, Date, Engagement, Likes, Comments)
+- Average engagement rate calculation across all posts
+- Best performing post identification (highest engagement)
+- Worst performing post identification (lowest engagement)
+- CSV export with all 10 metrics fields
+- Works with empty posts.jsonl (graceful message)
+- Works with posts but no metrics (prompts to collect analytics)
+
+**Tests:**
+- 24 comprehensive tests covering all functionality:
+  - Load posts: empty file, missing file, with/without metrics, multiple posts (5 tests)
+  - Truncate post ID: short, long, exact length (3 tests)
+  - Format engagement rate: zero, normal, high, low (4 tests)
+  - Display dashboard: no posts, no metrics, with metrics, best/worst, average (5 tests)
+  - Export CSV: no metrics, with metrics, multiple posts, headers (4 tests)
+  - Main function: default args, with export flag, path verification (3 tests)
+- mypy: PASS (type-safe)
+- ruff: PASS (clean code, auto-fixed 6 issues)
+- pytest: PASS (24/24 tests passing)
+
+**Commit:** dbcf168
+
+---
+
