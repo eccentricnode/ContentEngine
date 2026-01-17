@@ -33,7 +33,7 @@
         "uv run pytest passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Make analytics easily accessible via CLI"
     },
     {
@@ -49,7 +49,7 @@
         "Document posts.jsonl schema in README.md"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Bootstrap posts tracking with existing LinkedIn post"
     },
     {

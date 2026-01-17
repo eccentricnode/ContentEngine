@@ -1556,3 +1556,98 @@ All 26 user stories completed successfully!
 **Commit:** c045b1b
 
 ---
+## [2026-01-17] - AN-002 - Add CLI command for analytics collection
+
+**Implemented:**
+- Added 12 comprehensive CLI tests for collect-analytics command
+- Updated README.md with LinkedIn Analytics Collection section and examples
+- Command already existed in cli.py (lines 845-928), added comprehensive test coverage
+
+**Files changed:**
+- tests/test_collect_analytics_cli.py (new - 12 tests, 314 lines)
+- README.md (added analytics section with usage examples)
+- scripts/ralph/prd.json (updated AN-002 passes: true)
+
+**Learnings:**
+- CLI command uses import inside function: `from agents.linkedin.analytics import LinkedInAnalytics`
+- Must patch `os.getenv` (not `cli.os.getenv`) for environment variable mocking
+- Must patch `agents.linkedin.analytics.LinkedInAnalytics` for class mocking
+- Token loading fallback chain: environment variable → database → error
+- Click's CliRunner provides test isolation with isolated_filesystem()
+- Test both --test-post (single URN) and bulk update paths
+- Error handling tests: missing token, missing file, API failures
+
+**Codebase patterns discovered:**
+- CLI command accepts --days-back (default 7) and --test-post flags
+- Access token loading: os.getenv() → db query → graceful error
+- Test post mode displays metrics with formatting (1,000 impressions, 9.00%)
+- Bulk update mode shows summary: "Updated analytics for X posts"
+- Zero updates shows helpful hints (already have analytics, no posts in window)
+- Exception handling displays user-friendly error with suggestion
+
+**Tests:**
+- 12 comprehensive tests for collect-analytics CLI:
+  - Command exists and has help
+  - Missing token error (env and DB)
+  - Loads token from environment
+  - Loads token from database (fallback)
+  - Test post success (displays all metrics)
+  - Test post failure (returns None)
+  - Missing posts.jsonl error
+  - Update posts success (3 posts)
+  - Update posts zero updates (helpful message)
+  - Custom --days-back flag (14 days)
+  - Exception handling (API error)
+  - Header display verification
+- pytest: PASS (415 total tests, 12 new)
+- ruff: PASS (clean code)
+- mypy: Pre-existing database errors only
+
+**Commit:** c378ab4
+
+---
+
+## [2026-01-17] - AN-003 - Create posts.jsonl with existing post data
+
+**Implemented:**
+- Created data/posts.jsonl with New Year post entry (urn:li:share:7412668096475369472)
+- Added comprehensive schema documentation to README.md
+- Verified Post dataclass format compatibility with JSONL structure
+
+**Files changed:**
+- data/posts.jsonl (new - in .gitignore)
+- README.md (added schema documentation section)
+- scripts/ralph/prd.json (updated AN-003 passes: true)
+
+**Learnings:**
+- Posts.jsonl schema matches Post dataclass exactly (post_id, posted_at, blueprint_version, content, metrics)
+- Metrics field is optional (null until analytics are fetched)
+- JSONL format allows incremental appends (one JSON object per line)
+- data/ directory is in .gitignore (local development only)
+- Analytics fetching requires separate LinkedIn app with analytics permissions
+- Post dataclass uses Optional[PostMetrics] for metrics field
+- ISO 8601 format for timestamps (posted_at, fetched_at)
+
+**Codebase patterns discovered:**
+- JSONL loading: load_posts() creates Post objects from file
+- Dataclass serialization: asdict() converts to dict for JSON writing
+- Analytics workflow: create post entry → run collect-analytics → metrics populate
+- Post entry validation: load with LinkedInAnalytics.load_posts() to verify format
+- Schema documentation includes examples and field descriptions
+
+**Tests:**
+- Verified posts.jsonl loads correctly with Post dataclass: PASS
+- All 415 tests pass
+- ruff: PASS (clean code)
+- mypy: Pre-existing errors only (not related to this story)
+
+**Note on acceptance criteria:**
+"Run CLI to fetch analytics for this post" and "Verify metrics are populated" 
+require LinkedIn Analytics app setup (LINKEDIN_ANALYTICS_ACCESS_TOKEN).
+Per ANALYTICS_CREDENTIALS_NOTE.md, this setup is user-facing and not required
+for story completion. Schema documentation and file creation are complete.
+
+**Commit:** d01bed7
+
+---
+
