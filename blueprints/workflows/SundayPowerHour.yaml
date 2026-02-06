@@ -89,22 +89,45 @@ steps:
 
       Output as JSON array with: id, title, pillar, value, reasoning
 
-  - id: framework_selection
-    name: Framework Selection
-    duration_minutes: 5
-    description: Select appropriate framework for each post based on pillar and content type
+  - id: strategy_and_framework_selection
+    name: Strategy & Framework Selection
+    duration_minutes: 10
+    description: Decide which game (traffic vs building) and select framework for each post
     inputs:
       - 10 categorized ideas with pillar assignments
+      - ContentStrategy constraint (current goal, platform rules)
       - Framework blueprints (STF, MRS, SLA, PIF)
     outputs:
+      - Game decision for each post (traffic or building_in_public)
+      - Framing strategy (hook type: problem-first, result-first, etc.)
       - Framework assigned to each post
       - Structure preview for each post
     prompt_template: |
-      For each post idea, select the best framework:
+      For each post idea, decide strategy and framework:
 
       {{#posts}}
       {{id}}. {{title}} ({{pillar}})
       {{/posts}}
+
+      ## Current Goal: {{current_goal}}
+      {{#if get_hired}}
+      Primary: Get discovered by hiring managers (lean 70% traffic, 30% building)
+      {{else if build_community}}
+      Primary: Build Sales RPG community (lean 30% traffic, 70% building)
+      {{/if}}
+
+      ## Decision: Which Game?
+      Traffic (optimize for discovery):
+        - Hook-first (problem or result strangers care about)
+        - No assumed context
+        - Universal insights
+        - Example: "I spent 20min per post. Now 15 seconds. Here's the pattern:"
+
+      Building in Public (document your work):
+        - Context-first (here's what I'm building)
+        - Assume followers know the project
+        - Raw and transparent
+        - Example: "ContentEngine Phase 3 complete. Here's what I learned:"
 
       ## Framework Guidelines
       - STF (Story-Tried-Failed): Problem-solving narratives, what you built
@@ -112,13 +135,19 @@ steps:
       - SLA (Story-Lesson-Application): Teaching through experience
       - PIF (Poll/Interactive): Engagement posts, questions, polls
 
-      ## Pillar-Framework Mapping
-      - what_building → STF or SLA
-      - what_learning → MRS or SLA
-      - sales_tech → STF or PIF
-      - problem_solution → STF or MRS
+      ## Pillar Strategy Hints
+      - what_building → Can be either (use STF for both games)
+      - what_learning → Traffic (universal insights)
+      - sales_tech → Traffic (unique expertise attracts)
+      - problem_solution → Traffic (specific solutions)
 
-      For each post, output: id, framework, structure_preview (2-3 sentences)
+      For each post, output:
+      - id
+      - game (traffic or building_in_public)
+      - hook_type (problem_first, result_first, shipped, learning, etc.)
+      - framework (STF/MRS/SLA/PIF)
+      - rationale (why this game + framework?)
+      - structure_preview (2-3 sentences)
 
   - id: batch_writing
     name: Batch Writing
@@ -146,6 +175,23 @@ steps:
       Title: {{title}}
       Pillar: {{pillar_name}}
       Framework: {{framework_name}}
+      Game: {{game}}
+      Hook Type: {{hook_type}}
+
+      ## Strategy for This Post
+      {{#if traffic}}
+      TRAFFIC FRAMING:
+      - Hook-first: Lead with the problem or result strangers care about
+      - No assumed context: Don't mention ContentEngine/projects unless relevant to hook
+      - Universal insight: Make it about a pattern anyone can use
+      - Actionable: Reader should learn something specific
+      {{else}}
+      BUILDING IN PUBLIC FRAMING:
+      - Context-first: Start with what you're building (ContentEngine, PAI, etc.)
+      - Transparency: Show the process, not just the win
+      - Vulnerability: Admit struggles and mistakes openly
+      - Document: This is a progress update for followers
+      {{/if}}
 
       ## Context
       {{#context_themes}}
@@ -164,7 +210,7 @@ steps:
 
       Avoid: {{#forbidden_phrases}}{{.}}, {{/forbidden_phrases}}
 
-      Generate a complete LinkedIn post following the framework structure.
+      Generate a complete LinkedIn post following the framework structure AND the strategy framing above.
 
   - id: polish_and_schedule
     name: Polish & Schedule

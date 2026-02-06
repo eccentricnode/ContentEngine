@@ -54,7 +54,7 @@ def test_execute_workflow_step_execution_tracking() -> None:
     expected_steps = [
         "context_mining",
         "pillar_categorization",
-        "framework_selection",
+        "strategy_and_framework_selection",
         "batch_writing",
         "polish_and_schedule",
     ]
@@ -143,7 +143,7 @@ def test_execute_workflow_sequential_execution() -> None:
     assert "initial" in result.outputs
     assert "context_mining_executed" in result.outputs
     assert "pillar_categorization_executed" in result.outputs
-    assert "framework_selection_executed" in result.outputs
+    assert "strategy_and_framework_selection_executed" in result.outputs
     assert "batch_writing_executed" in result.outputs
     assert "polish_and_schedule_executed" in result.outputs
 
@@ -155,6 +155,6 @@ def test_execute_workflow_step_names() -> None:
 
     assert result.outputs["context_mining_name"] == "Context Mining"
     assert result.outputs["pillar_categorization_name"] == "Pillar Categorization"
-    assert result.outputs["framework_selection_name"] == "Framework Selection"
+    assert result.outputs["strategy_and_framework_selection_name"] == "Strategy & Framework Selection"
     assert result.outputs["batch_writing_name"] == "Batch Writing"
     assert result.outputs["polish_and_schedule_name"] == "Polish & Schedule"

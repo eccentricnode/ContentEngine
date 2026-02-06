@@ -1,0 +1,234 @@
+name: ContentStrategy
+type: constraint
+description: Strategic framing decisions - which game are we playing and why?
+version: 1.0
+
+# Core strategic question: What's the primary goal RIGHT NOW?
+current_goal:
+  primary: get_hired  # Options: get_hired, build_community, both
+  timeframe: 2-4 weeks  # How long until we reassess?
+  success_criteria:
+    - Land AI Engineer / Solutions Engineer / Sales Engineer role
+    - Portfolio proof of production AI systems
+    - Consistent shipping narrative (build in public)
+
+# The Two Games
+games:
+  traffic:
+    description: Optimize for discovery, reach, and growth
+    goal: Get found by hiring managers and recruiters
+    optimize_for: THEM (what hooks scroll-stoppers?)
+    metrics:
+      - Impressions
+      - Engagement rate
+      - Profile views
+      - Follower growth
+      - Click-throughs to portfolio
+    framing_strategy:
+      - Hook-first (problem or result they care about)
+      - Universal insights (anyone can use this pattern)
+      - No assumed context (explain what it is)
+      - Actionable takeaways
+      - Confidence without arrogance
+
+  building_in_public:
+    description: Document your work, attract like-minded builders
+    goal: Show consistent shipping, build credibility through transparency
+    optimize_for: YOU (what did I learn/build today?)
+    metrics:
+      - Did I capture the insight?
+      - Did the right people find it?
+      - Quality of replies/conversations
+      - Collaboration opportunities
+    framing_strategy:
+      - Context-first (here's what I'm building)
+      - Assume followers know the project
+      - Raw and real (not polished)
+      - Document process, not just wins
+      - Vulnerability builds trust
+
+# Platform-Specific Strategies
+platforms:
+  twitter:
+    default_game: traffic
+    why: |
+      Discovery platform. Fast scroll. Hook or die.
+      Timeline threads over time (not in one post).
+    framing_rules:
+      - Hook must work with ZERO context
+      - 1-3 tweets max per thread (usually)
+      - Insight-first, story optional
+      - Each tweet stands alone
+      - Universal problems > personal journey
+    best_pillars:
+      - what_learning (universal patterns)
+      - problem_solution (specific fixes)
+    when_to_build_in_public:
+      - Major milestone announcements
+      - Celebrating shipped features
+      - Quick wins / "just shipped X"
+
+  linkedin:
+    default_game: both  # Can do traffic AND building in one post
+    why: |
+      Professional audience expects depth.
+      STF framework = building in public WITH traffic appeal.
+      Longer format allows context-setting.
+    framing_rules:
+      - Use STF/MRS/SLA frameworks (story structure)
+      - 800-1200 chars allows context
+      - Problem → Journey → Result → Lesson
+      - Personal story + universal insight
+      - Can mention projects by name
+    best_pillars:
+      - what_building (with STF framework)
+      - sales_tech (unique expertise)
+      - All 4 work well
+
+  blog:
+    default_game: building_in_public
+    why: |
+      Deep technical content for people already interested.
+      SEO for long-tail discovery.
+      Portfolio piece for hiring managers.
+    framing_rules:
+      - Assume reader chose to be here
+      - Technical depth expected
+      - Architecture over implementation
+      - Link to GitHub/demos
+      - Tutorial or deep-dive format
+    best_pillars:
+      - what_building (architecture posts)
+      - what_learning (synthesis posts)
+
+# Decision Framework: Which Game for This Post?
+decision_tree:
+  questions:
+    - question: What's the current primary goal?
+      answer_mapping:
+        get_hired: Lean toward traffic (70/30)
+        build_community: Lean toward building (30/70)
+        both: Balanced (50/50)
+
+    - question: Which platform?
+      answer_mapping:
+        twitter: Traffic unless major milestone
+        linkedin: Both (use STF framework)
+        blog: Building in public
+
+    - question: Which pillar is this idea?
+      answer_mapping:
+        what_building: Can be either (use STF for both)
+        what_learning: Traffic (universal insights)
+        sales_tech: Traffic (unique expertise attracts)
+        problem_solution: Traffic (specific solutions)
+
+    - question: Do strangers care about this problem?
+      answer_mapping:
+        yes: Traffic framing
+        no: Building in public framing
+        unsure: Test both versions
+
+# Framing Templates by Game
+framing_templates:
+  traffic_hooks:
+    problem_first:
+      - "Most [people] do [bad thing]. Here's a better pattern:"
+      - "I spent [time] on [problem]. Now [quick result]. Here's how:"
+      - "Stop [bad practice]. Do [good practice] instead. Here's why:"
+
+    result_first:
+      - "I built [result] in [timeframe]. Here's the pattern you can steal:"
+      - "[Metric] → [Better metric] in [timeframe]. The approach: [method]"
+      - "One command. [Result]. Here's what it does:"
+
+    insight_first:
+      - "[Universal truth]. Here's what that means for [domain]:"
+      - "The pattern: [concept]. Why it works: [reason]"
+      - "[Counterintuitive claim]. Here's the data:"
+
+  building_in_public_hooks:
+    shipped:
+      - "[Project] [milestone] complete. [Number] stories shipped. Here's what I learned:"
+      - "Just shipped [feature]. [Metric] improvement. The approach:"
+
+    learning:
+      - "Spent [time] debugging [problem]. Here's what worked:"
+      - "Built [thing] this week. 3 takeaways:"
+
+    progress:
+      - "[Project] progress update: [status]. What's working / what's not:"
+      - "Week [number] of building [project]. Current state:"
+
+# Current Strategy (2026-01-17)
+current_strategy:
+  timeframe: Next 2-4 weeks
+  primary_goal: get_hired
+  distribution:
+    traffic: 70%
+    building_in_public: 30%
+
+  platform_mix:
+    twitter:
+      frequency: 3-5x per week
+      style: Traffic-optimized insights (1-3 tweets)
+      pillars: what_learning (50%), problem_solution (30%), sales_tech (20%)
+
+    linkedin:
+      frequency: 2x per week (10 posts from Sunday Power Hour → approve 8-10)
+      style: STF framework (traffic + building hybrid)
+      pillars: All 4 (35/30/20/15 distribution)
+
+    blog:
+      frequency: 1x per week
+      style: Deep technical architecture posts
+      pillars: what_building (deep dives on ContentEngine, PAI, etc)
+
+  success_indicators:
+    - Profile views increasing
+    - Hiring manager engagement (comments/DMs)
+    - Can you explain how you built X? questions
+    - Portfolio clicks from LinkedIn bio
+    - Interview requests
+
+# When to Reassess Strategy
+reassessment_triggers:
+  - Every 2-4 weeks (calendar reminder)
+  - When primary goal changes (got hired? pivot to build_community)
+  - When metrics plateau (try different game mix)
+  - When new opportunity appears (Sales RPG funding? shift to building)
+
+# Open Questions / Uncertainties
+open_questions:
+  - question: How do we automate the "which game" decision?
+    current_approach: Manual decision per post during Sunday Power Hour
+    ideal_state: Content Optimizer Agent suggests framing based on goal + platform + pillar
+
+  - question: How do we measure if traffic framing is working?
+    current_approach: Track impressions + profile views manually
+    ideal_state: Analytics dashboard showing traffic vs building posts performance
+
+  - question: Should we A/B test framings?
+    current_approach: Intuition-based choices
+    ideal_state: Same idea posted with both framings, measure which performs better
+
+  - question: When do we know it's time to shift from get_hired to build_community?
+    current_approach: After landing a stable job
+    ideal_state: Gradual shift as job search progresses (70/30 → 50/50 → 30/70)
+
+# Notes for Future Phases
+future_enhancements:
+  phase_4:
+    - Brand Planner agent makes "which game" decision per post
+    - Suggests optimal framing based on current_goal + platform + pillar
+    - Outputs: "Use traffic framing, hook: problem-first, platform: Twitter"
+
+  phase_5:
+    - Content Optimizer auto-generates both versions (traffic + building)
+    - A/B test framework (post version A, measure, iterate)
+    - Learning loop: which framings perform best for each pillar?
+
+  phase_6:
+    - Engagement analytics feed back into strategy
+    - Auto-adjust distribution based on what's working
+    - "Traffic posts getting 3x engagement → shift to 80/20 mix"

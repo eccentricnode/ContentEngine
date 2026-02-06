@@ -18,6 +18,7 @@ from lib.blueprint_engine import execute_workflow
 from agents.linkedin.post import post_to_linkedin
 from agents.linkedin.content_generator import generate_post
 from agents.linkedin.post_validator import validate_post
+from agents.brand_planner import BrandPlanner, ContentBrief, Game
 
 
 logger = setup_logger(__name__)
@@ -925,6 +926,453 @@ def collect_analytics(days_back: int, test_post: Optional[str]) -> None:
             click.echo(click.style(f"\n❌ Error updating analytics: {e}", fg="red"))
             logger.exception("Analytics collection failed")
             sys.exit(1)
+
+
+@cli.command("plan-content")
+@click.option("--days", default=7, type=int, help="Days of context to aggregate (default: 7)")
+@click.option("--posts", default=10, type=int, help="Target posts to plan (default: 10)")
+@click.option("--dry-run", is_flag=True, help="Preview without saving to database")
+@click.option("--model", default="llama3:8b", help="Ollama model for planning (default: llama3:8b)")
+def plan_content(days: int, posts: int, dry_run: bool, model: str) -> None:
+    """Plan content using Brand Planner agent.
+
+    Analyzes context from the past N days and generates content plans
+    with strategic decisions about pillars, frameworks, and game strategy.
+
+    The Brand Planner:
+    - Extracts content ideas from daily context
+    - Assigns pillars based on 35/30/20/15 distribution
+    - Decides game strategy (traffic vs building-in-public)
+    - Selects appropriate frameworks (STF/MRS/SLA/PIF)
+    """
+    from datetime import timedelta
+    from pathlib import Path
+    import json
+
+    click.echo("🧠 Starting Brand Planner...\n")
+
+    try:
+        # Calculate date range
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        week_start = start_date.strftime("%Y-%m-%d")
+
+        click.echo(f"📅 Analyzing: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        click.echo(f"🎯 Target: {posts} posts")
+
+        # Load context files
+        context_dir = Path("context")
+        contexts = []
+
+        if context_dir.exists():
+            click.echo(f"\n📖 Loading context from {context_dir}/...")
+            for i in range(days):
+                date = (end_date - timedelta(days=i)).strftime("%Y-%m-%d")
+                context_file = context_dir / f"{date}.json"
+                if context_file.exists():
+                    try:
+                        with open(context_file, "r") as f:
+                            data = json.load(f)
+                            from lib.context_synthesizer import DailyContext
+                            ctx = DailyContext(
+                                themes=data.get("themes", []),
+                                decisions=data.get("decisions", []),
+                                progress=data.get("progress", []),
+                                date=data.get("date", date),
+                                raw_data=data.get("raw_data", {}),
+                            )
+                            contexts.append(ctx)
+                            click.echo(f"   ✓ Loaded {date}")
+                    except Exception as e:
+                        click.echo(f"   ⚠️ Failed to load {date}: {e}")
+
+        if not contexts:
+            click.echo("\n⚠️ No context files found. Generating from session history...")
+
+            # Fall back to capturing context on the fly
+            sessions = read_session_history()
+            try:
+                projects = read_project_notes()
+            except FileNotFoundError:
+                projects = []
+
+            from lib.context_synthesizer import synthesize_daily_context
+            ctx = synthesize_daily_context(
+                sessions=sessions,
+                projects=projects,
+                date=end_date.strftime("%Y-%m-%d"),
+            )
+            contexts.append(ctx)
+            click.echo(f"   ✓ Synthesized context with {len(ctx.themes)} themes")
+
+        click.echo(f"\n📊 Loaded {len(contexts)} day(s) of context")
+
+        # Run Brand Planner
+        click.echo(f"\n🤖 Planning with {model}...")
+        planner = BrandPlanner(model=model)
+        result = planner.plan_week(contexts, target_posts=posts)
+
+        if not result.success:
+            click.echo(click.style("\n❌ Planning failed:", fg="red"))
+            for error in result.errors:
+                click.echo(f"   • {error}")
+            sys.exit(1)
+
+        # Display results
+        click.echo(click.style(f"\n✅ Planning complete!", fg="green"))
+        click.echo(f"   Ideas extracted: {result.total_ideas_extracted}")
+        click.echo(f"   Briefs created: {len(result.briefs)}")
+
+        # Distribution breakdown
+        click.echo("\n📈 Pillar Distribution:")
+        total = sum(result.distribution.values())
+        for pillar, count in sorted(result.distribution.items()):
+            percentage = (count / total * 100) if total > 0 else 0
+            click.echo(f"   {pillar}: {count} ({percentage:.0f}%)")
+
+        # Game strategy breakdown
+        click.echo("\n🎮 Game Strategy:")
+        for game, count in result.game_breakdown.items():
+            click.echo(f"   {game}: {count}")
+
+        # Show briefs
+        click.echo("\n📝 Content Briefs:")
+        click.echo("=" * 70)
+
+        for i, brief in enumerate(result.briefs, 1):
+            click.echo(f"\n{i}. {brief.idea.title}")
+            click.echo(f"   Pillar: {brief.pillar} | Framework: {brief.framework}")
+            click.echo(f"   Game: {brief.game.value} | Hook: {brief.hook_type.value}")
+            click.echo(f"   Insight: {brief.idea.core_insight[:80]}...")
+            click.echo(f"   Structure: {brief.structure_preview[:70]}...")
+
+        if dry_run:
+            click.echo(click.style("\n🔍 DRY RUN - No changes saved to database", fg="yellow"))
+        else:
+            # Save to database
+            click.echo("\n💾 Saving to database...")
+            db = get_db()
+
+            created_plans = []
+            for brief in result.briefs:
+                plan = ContentPlan(
+                    week_start_date=week_start,
+                    pillar=brief.pillar,
+                    framework=brief.framework,
+                    idea=brief.idea.title,
+                    status=ContentPlanStatus.PLANNED,
+                    game=brief.game.value,
+                    hook_type=brief.hook_type.value,
+                    core_insight=brief.idea.core_insight,
+                    context_summary=brief.context_summary,
+                    structure_preview=brief.structure_preview,
+                    rationale=brief.rationale,
+                    source_theme=brief.idea.source_theme,
+                    audience_value=brief.idea.audience_value,
+                )
+                db.add(plan)
+                created_plans.append(plan)
+
+            db.commit()
+
+            # Refresh to get IDs
+            for plan in created_plans:
+                db.refresh(plan)
+
+            click.echo(click.style(f"   ✓ Created {len(created_plans)} content plans", fg="green"))
+
+            click.echo("\n💡 Next steps:")
+            click.echo(f"   • Generate post: uv run content-engine generate-from-plan <plan_id>")
+            click.echo(f"   • List plans: SELECT * FROM content_plans WHERE week_start_date = '{week_start}'")
+
+            db.close()
+
+        if result.errors:
+            click.echo(click.style("\n⚠️ Warnings:", fg="yellow"))
+            for error in result.errors:
+                click.echo(f"   • {error}")
+
+    except AIError as e:
+        click.echo(click.style(f"\n❌ AI planning failed: {e}", fg="red"))
+        click.echo("\n💡 Make sure Ollama is running: ollama serve")
+        sys.exit(1)
+    except Exception as e:
+        click.echo(click.style(f"\n❌ Planning failed: {e}", fg="red"))
+        logger.exception("Brand Planner failed")
+        sys.exit(1)
+
+
+@cli.command("generate-from-plan")
+@click.argument("plan_id", type=int)
+@click.option("--model", default="llama3:8b", help="Ollama model for generation (default: llama3:8b)")
+def generate_from_plan(plan_id: int, model: str) -> None:
+    """Generate a LinkedIn post from a content plan.
+
+    Uses the plan's pillar, framework, game strategy, and context
+    to generate an optimized post.
+    """
+    click.echo(f"📝 Generating post from plan #{plan_id}...\n")
+
+    try:
+        db = get_db()
+
+        # Load plan
+        plan = db.get(ContentPlan, plan_id)
+        if not plan:
+            click.echo(click.style(f"❌ Plan #{plan_id} not found", fg="red"))
+            sys.exit(1)
+
+        if plan.status == ContentPlanStatus.GENERATED:
+            click.echo(click.style(f"⚠️ Plan #{plan_id} already has a generated post (ID: {plan.post_id})", fg="yellow"))
+            if not click.confirm("Generate anyway?"):
+                sys.exit(0)
+
+        click.echo(f"Plan: {plan.idea}")
+        click.echo(f"   Pillar: {plan.pillar}")
+        click.echo(f"   Framework: {plan.framework}")
+        click.echo(f"   Game: {plan.game or 'not set'}")
+        click.echo(f"   Hook: {plan.hook_type or 'not set'}")
+
+        # Build context for generation
+        context_dict = {
+            "themes": [plan.source_theme or plan.idea] if plan.source_theme else [plan.idea],
+            "decisions": [],
+            "progress": [plan.core_insight] if plan.core_insight else [],
+        }
+
+        # Add context summary to themes if available
+        if plan.context_summary:
+            context_dict["themes"].extend(plan.context_summary.split(" | ")[:2])
+
+        # Update plan status
+        plan.status = ContentPlanStatus.IN_PROGRESS
+        db.commit()
+
+        # Generate post
+        click.echo(f"\n✍️ Generating with {model}...")
+        result = generate_post(
+            context=context_dict,
+            pillar=plan.pillar,
+            framework=plan.framework,
+            model=model,
+        )
+
+        click.echo(f"   Framework used: {result.framework_used}")
+        click.echo(f"   Validation score: {result.validation_score:.2f}")
+        click.echo(f"   Iterations: {result.iterations}")
+
+        # Show validation warnings if any
+        if result.violations:
+            click.echo("\n⚠️ Validation warnings:")
+            for violation in result.violations:
+                click.echo(f"   • {violation}")
+
+        # Save post to database
+        post = Post(
+            content=result.content,
+            platform=Platform.LINKEDIN,
+            status=PostStatus.DRAFT,
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+
+        # Link plan to post
+        plan.status = ContentPlanStatus.GENERATED
+        plan.post_id = post.id
+        db.commit()
+
+        click.echo(click.style(f"\n✅ Post created (ID: {post.id})", fg="green"))
+        click.echo(f"\n{'='*60}")
+        click.echo("Content Preview:")
+        click.echo(f"{'='*60}")
+        # Show first 500 chars
+        preview = result.content[:500] + "..." if len(result.content) > 500 else result.content
+        click.echo(preview)
+        click.echo(f"{'='*60}")
+
+        click.echo("\n💡 Next steps:")
+        click.echo(f"   • Review: uv run content-engine show {post.id}")
+        click.echo(f"   • Validate: uv run content-engine validate {post.id} --framework {plan.framework}")
+        click.echo(f"   • Approve: uv run content-engine approve {post.id}")
+
+        db.close()
+
+    except AIError as e:
+        click.echo(click.style(f"\n❌ Generation failed: {e}", fg="red"))
+        click.echo("\n💡 Make sure Ollama is running: ollama serve")
+        sys.exit(1)
+    except Exception as e:
+        click.echo(click.style(f"\n❌ Generation failed: {e}", fg="red"))
+        logger.exception("Generation from plan failed")
+        sys.exit(1)
+
+
+@cli.command("worker")
+@click.option("--continuous", is_flag=True, help="Run continuously (daemon mode)")
+@click.option("--dry-run", is_flag=True, help="Preview without actually posting")
+@click.option("--poll-interval", type=int, default=30, help="Seconds between queue checks")
+def worker(continuous: bool, dry_run: bool, poll_interval: int) -> None:
+    """Run the job worker to process scheduled posts.
+
+    The worker processes the SQLite job queue, posting content to
+    LinkedIn (and other platforms) when their scheduled time arrives.
+    """
+    from job_worker import JobWorker
+
+    click.echo("🔧 Starting ContentEngine Job Worker...")
+
+    if dry_run:
+        click.echo(click.style("   DRY RUN mode - no actual posting", fg="yellow"))
+
+    worker_instance = JobWorker(dry_run=dry_run)
+
+    if continuous:
+        click.echo(f"   Continuous mode (poll every {poll_interval}s)")
+        click.echo("   Press Ctrl+C to stop\n")
+        try:
+            worker_instance.run_continuous(poll_interval=poll_interval)
+        except KeyboardInterrupt:
+            click.echo("\n👋 Worker stopped")
+    else:
+        processed = worker_instance.process_queue()
+        click.echo(f"✅ Processed {processed} jobs")
+
+
+@cli.group()
+def queue() -> None:
+    """Manage the job queue for scheduled posts."""
+    pass
+
+
+@queue.command("list")
+@click.option("--status", type=click.Choice(["pending", "processing", "completed", "failed", "cancelled"]))
+@click.option("--limit", type=int, default=20)
+def queue_list(status: Optional[str], limit: int) -> None:
+    """List jobs in the queue."""
+    from lib.database import JobQueue, JobStatus
+
+    db = get_db()
+
+    query = db.query(JobQueue).order_by(JobQueue.created_at.desc()).limit(limit)
+
+    if status:
+        query = query.filter(JobQueue.status == JobStatus(status.upper()))
+
+    jobs = query.all()
+
+    if not jobs:
+        click.echo("No jobs found.")
+        db.close()
+        return
+
+    click.echo(f"\n{'ID':<5} {'Type':<18} {'Status':<12} {'Post':<6} {'Scheduled':<20}")
+    click.echo("=" * 70)
+
+    for job in jobs:
+        scheduled = job.scheduled_at.strftime("%Y-%m-%d %H:%M") if job.scheduled_at else "immediate"
+        click.echo(f"{job.id:<5} {job.job_type.value:<18} {job.status.value:<12} {job.post_id:<6} {scheduled:<20}")
+
+    db.close()
+
+
+@queue.command("status")
+@click.argument("job_id", type=int)
+def queue_status(job_id: int) -> None:
+    """Show detailed status of a job."""
+    from lib.database import JobQueue
+
+    db = get_db()
+    job = db.get(JobQueue, job_id)
+
+    if not job:
+        click.echo(click.style(f"Job {job_id} not found", fg="red"))
+        db.close()
+        sys.exit(1)
+
+    click.echo(f"\n{'='*50}")
+    click.echo(f"Job #{job.id}")
+    click.echo(f"{'='*50}")
+    click.echo(f"Type: {job.job_type.value}")
+    click.echo(f"Status: {job.status.value}")
+    click.echo(f"Post ID: {job.post_id}")
+    click.echo(f"Priority: {job.priority}")
+    click.echo(f"Scheduled: {job.scheduled_at or 'immediate'}")
+    click.echo(f"Attempts: {job.attempts}/{job.max_attempts}")
+
+    if job.last_error:
+        click.echo(f"Last Error: {job.last_error}")
+    if job.next_retry_at:
+        click.echo(f"Next Retry: {job.next_retry_at}")
+    if job.source_file:
+        click.echo(f"Source File: {job.source_file}")
+
+    click.echo(f"\nCreated: {job.created_at}")
+    if job.started_at:
+        click.echo(f"Started: {job.started_at}")
+    if job.completed_at:
+        click.echo(f"Completed: {job.completed_at}")
+
+    db.close()
+
+
+@queue.command("cancel")
+@click.argument("job_id", type=int)
+def queue_cancel(job_id: int) -> None:
+    """Cancel a pending job."""
+    from mcp_server import ContentEngineMCP
+
+    mcp = ContentEngineMCP()
+    result = mcp.cancel(job_id=job_id)
+
+    if result.get("action") == "cancelled":
+        click.echo(click.style(f"✅ Job {job_id} cancelled", fg="green"))
+    else:
+        click.echo(click.style(f"❌ {result.get('error', 'Unknown error')}", fg="red"))
+
+
+@queue.command("fire")
+@click.argument("post_id", type=int)
+def queue_fire(post_id: int) -> None:
+    """Queue a post for immediate publishing."""
+    from mcp_server import ContentEngineMCP
+
+    mcp = ContentEngineMCP()
+    result = mcp.fire(post_id=post_id)
+
+    if result.get("action") == "queued_immediate":
+        click.echo(click.style(f"✅ Post {post_id} queued for immediate publishing", fg="green"))
+        click.echo(f"   Job ID: {result.get('job_id')}")
+        click.echo("\n💡 Run worker to process: uv run content-engine worker")
+    else:
+        click.echo(click.style(f"❌ {result.get('error', 'Unknown error')}", fg="red"))
+
+
+@queue.command("schedule")
+@click.argument("post_id", type=int)
+@click.argument("scheduled_time")
+def queue_schedule(post_id: int, scheduled_time: str) -> None:
+    """Schedule a post for future publishing.
+
+    SCHEDULED_TIME format: YYYY-MM-DDTHH:MM (e.g., 2026-02-10T09:00)
+    """
+    from mcp_server import ContentEngineMCP
+
+    mcp = ContentEngineMCP()
+
+    try:
+        result = mcp.schedule(post_id=post_id, scheduled_at=scheduled_time)
+
+        if result.get("action") in ["scheduled", "rescheduled"]:
+            click.echo(click.style(f"✅ Post {post_id} scheduled", fg="green"))
+            click.echo(f"   Job ID: {result.get('job_id')}")
+            click.echo(f"   Scheduled: {result.get('scheduled_at')}")
+        else:
+            click.echo(click.style(f"❌ {result.get('error', 'Unknown error')}", fg="red"))
+
+    except ValueError as e:
+        click.echo(click.style(f"❌ {e}", fg="red"))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -198,6 +198,16 @@ class ContentPlan(Base):
     idea = Column(Text, nullable=False)  # Content idea/title
     status = Column(SQLEnum(ContentPlanStatus), nullable=False, default=ContentPlanStatus.PLANNED)
 
+    # Brand Planner fields (Phase 4)
+    game = Column(String(30), nullable=True)  # traffic / building_in_public
+    hook_type = Column(String(30), nullable=True)  # problem_first, shipped, etc.
+    core_insight = Column(Text, nullable=True)  # One-sentence insight
+    context_summary = Column(Text, nullable=True)  # Relevant context for generation
+    structure_preview = Column(Text, nullable=True)  # Expected post structure
+    rationale = Column(Text, nullable=True)  # Why these choices
+    source_theme = Column(String(255), nullable=True)  # Original context theme
+    audience_value = Column(String(20), nullable=True)  # low/medium/high
+
     # Optional: link to generated post
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=True)
 
@@ -210,6 +220,63 @@ class ContentPlan(Base):
 
     def __repr__(self) -> str:
         return f"<ContentPlan(id={self.id}, pillar={self.pillar}, framework={self.framework}, status={self.status})>"
+
+
+class JobStatus(str, Enum):
+    """Job queue status enum."""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class JobType(str, Enum):
+    """Job type enum."""
+    POST_TO_LINKEDIN = "post_to_linkedin"
+    POST_TO_TWITTER = "post_to_twitter"
+    POST_TO_BLOG = "post_to_blog"
+
+
+class JobQueue(Base):
+    """SQLite-based job queue for scheduled content posting."""
+
+    __tablename__ = "job_queue"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_type = Column(SQLEnum(JobType), nullable=False)
+    status = Column(SQLEnum(JobStatus), nullable=False, default=JobStatus.PENDING)
+
+    # Reference to content
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+
+    # Scheduling
+    scheduled_at = Column(DateTime, nullable=True)  # NULL = immediate
+    priority = Column(Integer, default=0)  # Higher = more urgent
+
+    # Retry handling
+    attempts = Column(Integer, default=0)
+    max_attempts = Column(Integer, default=3)
+    last_error = Column(Text, nullable=True)
+    next_retry_at = Column(DateTime, nullable=True)
+
+    # Tracking
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+    # Source tracking (for edit-after-ingest)
+    source_file = Column(String(512), nullable=True)  # Path in git worktree
+    source_hash = Column(String(64), nullable=True)  # Content hash for change detection
+
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    post = relationship("Post", foreign_keys=[post_id])
+
+    def __repr__(self) -> str:
+        return f"<JobQueue(id={self.id}, type={self.job_type}, status={self.status}, post_id={self.post_id})>"
 
 
 def init_db() -> None:

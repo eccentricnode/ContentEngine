@@ -39,7 +39,7 @@ def test_workflow_has_five_steps():
     expected_ids = [
         "context_mining",
         "pillar_categorization",
-        "framework_selection",
+        "strategy_and_framework_selection",
         "batch_writing",
         "polish_and_schedule",
     ]
@@ -115,11 +115,11 @@ def test_pillar_categorization_step():
 
 
 def test_framework_selection_step():
-    """Test framework_selection step structure."""
+    """Test strategy_and_framework_selection step structure."""
     workflow = load_workflow("SundayPowerHour")
     step = workflow["steps"][2]
 
-    assert step["id"] == "framework_selection"
+    assert step["id"] == "strategy_and_framework_selection"
     assert "Framework" in step["name"]
     assert "prompt_template" in step
 

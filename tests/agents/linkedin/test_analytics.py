@@ -1,4 +1,8 @@
-"""Tests for LinkedIn Analytics Integration"""
+"""Tests for LinkedIn Analytics Integration
+
+NOTE: Analytics API access blocked - LinkedIn rejected app approval.
+These tests are skipped until analytics access is restored.
+"""
 # mypy: disable-error-code="no-untyped-def"
 
 import json
@@ -13,6 +17,9 @@ from agents.linkedin.analytics import (
     Post,
     PostMetrics,
 )
+
+# Skip all tests in this module - Analytics API access blocked
+pytestmark = pytest.mark.skip(reason="LinkedIn Analytics API access blocked - app rejected")
 
 
 @pytest.fixture

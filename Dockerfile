@@ -10,18 +10,21 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock* ./
 
-# Install dependencies
+# Install dependencies (create venv in container)
 RUN uv sync --frozen
 
 # Copy application code
 COPY . .
 
-# Create data directory for SQLite
-RUN mkdir -p /app/data
+# Create directories
+RUN mkdir -p /app/data /app/context
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
+
+# Run database migrations on startup
+RUN uv run alembic upgrade head || true
 
 # Expose port for API
 EXPOSE 5000
