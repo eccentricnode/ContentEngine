@@ -1,0 +1,220 @@
+name: PlatformRules
+type: constraint
+description: Platform-specific content formatting rules and constraints for LinkedIn, Twitter, and Blog posts
+
+# LinkedIn Platform Rules
+linkedin:
+  character_limits:
+    optimal_min: 800
+    optimal_max: 1200
+    absolute_max: 3000
+    description: Optimal range balances depth with engagement; max enforced by platform
+
+  formatting_rules:
+    line_breaks:
+      required: true
+      description: Use line breaks to create visual hierarchy and readability
+      best_practices:
+        - Single line breaks between sentences for emphasis
+        - Double line breaks between sections or ideas
+        - Avoid walls of text (max 3-4 lines per paragraph)
+        - Use whitespace strategically for visual breathing room
+
+    emojis:
+      max_recommended: 3
+      description: Minimal emoji use maintains professionalism
+      best_practices:
+        - Use sparingly (2-3 max per post)
+        - Prefer at section breaks or for emphasis
+        - Avoid emoji-heavy content (appears spammy)
+        - Choose emojis that add clarity, not decoration
+
+    lists:
+      allowed: true
+      description: Bullet points and numbered lists improve scannability
+      formats:
+        - "• Bullet points with bullet character"
+        - "- Hyphen-based lists"
+        - "1. Numbered lists"
+      best_practices:
+        - Keep list items concise (1-2 lines each)
+        - Parallel structure across items
+        - Max 5-7 items per list for readability
+
+    hashtags:
+      max_recommended: 5
+      placement: End of post or inline within content
+      description: Hashtags improve discoverability but excess appears spammy
+      best_practices:
+        - 3-5 relevant hashtags optimal
+        - Mix popular and niche tags
+        - Capitalize for readability (e.g., #ContentStrategy)
+        - Avoid hashtag stuffing
+
+    mentions:
+      allowed: true
+      description: Tag people/companies for engagement and attribution
+      best_practices:
+        - Only tag when genuinely relevant
+        - Credit sources and collaborators
+        - Avoid spam-tagging for visibility
+
+  engagement_optimization:
+    hook_placement: First 2 lines (visible above "...see more")
+    call_to_action: Optional but recommended
+    question_prompts: Encourages comments and engagement
+    readability: Aim for 8th-grade reading level
+
+  content_structure:
+    recommended_patterns:
+      - Hook (1-2 lines) → Body → Lesson/CTA
+      - Problem → Solution → Outcome
+      - Story → Insight → Application
+      - Question → Context → Answer
+
+  red_flags:
+    - Walls of text without line breaks
+    - Excessive emojis (4+)
+    - Hashtag stuffing (6+)
+    - All caps sections
+    - Clickbait or misleading hooks
+    - Overly promotional language
+
+# Twitter/X Platform Rules (for future expansion)
+twitter:
+  character_limits:
+    per_tweet: 280
+    thread_recommended_max: 10
+    absolute_max: 25
+    description: Single tweets limited to 280 chars; threads allow longer content
+
+  formatting_rules:
+    line_breaks:
+      recommended: true
+      description: Breaks improve readability in constrained space
+
+    emojis:
+      recommended_max: 2
+      description: 1-2 emojis per tweet for personality
+
+    hashtags:
+      max_recommended: 2
+      description: Twitter hashtags less effective than LinkedIn
+      best_practices:
+        - 1-2 hashtags max
+        - Trending tags for visibility
+        - Avoid multiple hashtag spam
+
+  thread_structure:
+    numbering: "1/X format recommended"
+    hook_tweet: First tweet must standalone and hook readers
+    conclusion_tweet: Summary and CTA in final tweet
+
+  engagement_optimization:
+    question_tweets: High engagement format
+    polls: Native poll feature for interactive content
+    media: Images/GIFs increase engagement 2-3x
+
+# Blog Platform Rules (for future expansion)
+blog:
+  word_count:
+    short_form: 500-800
+    medium_form: 1000-1500
+    long_form: 2000-3000
+    tutorial: 1500-2500
+    description: Longer content appropriate for blogs vs social
+
+  formatting_rules:
+    headings:
+      required: true
+      levels: H1 (title), H2 (sections), H3 (subsections)
+      description: Hierarchical structure improves scannability
+
+    paragraphs:
+      recommended_length: 3-5 sentences
+      max_length: 150 words
+      description: Short paragraphs maintain readability
+
+    images:
+      recommended: true
+      frequency: Every 300-500 words
+      description: Visuals break up text and illustrate concepts
+
+    code_blocks:
+      allowed: true
+      syntax_highlighting: Required for technical content
+
+    lists:
+      encouraged: true
+      description: Bullet points and numbered lists improve scannability
+
+  content_structure:
+    introduction:
+      required: true
+      length: 100-200 words
+      components: Hook, context, promise/value prop
+
+    body:
+      section_headers: Required for articles 1000+ words
+      subheadings: Recommended for complex sections
+      transitions: Connect sections logically
+
+    conclusion:
+      required: true
+      length: 50-150 words
+      components: Summary, key takeaway, CTA
+
+  seo_optimization:
+    meta_description: 150-160 characters
+    title_tag: 50-60 characters
+    keyword_placement: Title, intro, headings, conclusion
+    internal_links: 2-5 per article
+    external_links: Cite sources and resources
+
+# Cross-platform validation rules
+cross_platform:
+  accessibility:
+    - Use alt text for images
+    - Avoid color-only indicators
+    - Provide transcripts for audio/video
+    - Use clear, simple language
+
+  brand_consistency:
+    - Maintain voice across platforms
+    - Adapt length and format to platform
+    - Consistent value proposition
+    - Cross-link between platforms
+
+# Validation severity levels
+validation:
+  errors:
+    description: Must fix before posting
+    examples:
+      - Exceeds absolute character limit
+      - Missing required elements (e.g., blog title)
+      - Accessibility violations
+      - Platform policy violations
+
+  warnings:
+    description: Should fix for optimal performance
+    examples:
+      - Suboptimal character count (too short/long)
+      - Excessive emojis or hashtags
+      - Poor formatting (walls of text)
+      - Weak hook or missing CTA
+
+  suggestions:
+    description: Optional improvements
+    examples:
+      - Add more line breaks for readability
+      - Consider adding relevant hashtags
+      - Include visual content
+      - Strengthen hook or CTA
+
+# Metadata
+version: "1.0"
+last_updated: "2026-01-17"
+platform_support:
+  linkedin: complete
+  twitter: planned
+  blog: planned

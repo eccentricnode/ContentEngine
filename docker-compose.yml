@@ -1,6 +1,5 @@
-version: '3.8'
-
 services:
+  # Main CLI service - for running one-off commands
   content-engine:
     build:
       context: .
@@ -10,31 +9,60 @@ services:
       - "5000:5000"
     volumes:
       # Persist SQLite database
-      - ./data:/app/data
+      - content-db:/app/data
+      - ./content.db:/app/content.db
+      # Context files
+      - ./context:/app/context
       # Mount .env file for credentials
       - ./.env:/app/.env:ro
+      # Blueprints (for development)
+      - ./blueprints:/app/blueprints:ro
     environment:
       - PYTHONUNBUFFERED=1
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+    restart: "no"
+    # Default: show help. Override with docker-compose run
+    command: ["uv", "run", "content-engine", "--help"]
 
-  # Optional: Worker service for scheduled posts
+  # Job Worker - processes the SQLite queue
   worker:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: content-engine-worker
     volumes:
-      - ./data:/app/data
+      - content-db:/app/data
+      - ./content.db:/app/content.db
+      - ./context:/app/context
+      - ./.env:/app/.env:ro
+      - ./blueprints:/app/blueprints:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["uv", "run", "content-engine", "worker", "--continuous", "--poll-interval", "30"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "job_worker"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+  # MCP Server - for Claude Code integration (on-demand)
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content-engine-mcp
+    volumes:
+      - content-db:/app/data
+      - ./content.db:/app/content.db
+      - ./context:/app/context
       - ./.env:/app/.env:ro
     environment:
       - PYTHONUNBUFFERED=1
-    command: ["uv", "run", "python", "-m", "worker"]
-    restart: unless-stopped
-    depends_on:
-      - content-engine
+    # Run MCP server - accepts JSON commands via stdin
+    command: ["uv", "run", "python", "mcp_server.py"]
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+volumes:
+  content-db:

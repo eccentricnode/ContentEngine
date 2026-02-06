@@ -1,6 +1,5 @@
 """LinkedIn OAuth 2.0 server for Content Engine."""
 
-import os
 import sys
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -191,7 +190,6 @@ def main() -> None:
     logger.info("=" * 60)
 
     server_config = get_server_config()
-    linkedin_config = get_linkedin_config()
 
     server_address = (server_config.host, server_config.port)
     httpd = HTTPServer(server_address, OAuthHandler)

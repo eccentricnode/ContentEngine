@@ -1,0 +1,93 @@
+name: SLA
+platform: linkedin
+description: Story-Lesson-Application Framework - Narrative teaching format with clear takeaways
+type: framework
+
+structure:
+  sections:
+    - name: Story
+      description: A concrete, specific narrative that illustrates a point
+      guidelines:
+        - Use real events from your experience
+        - Include specific details (names, numbers, settings)
+        - Make it engaging - hook readers early
+        - Show, don't just tell
+        - Keep it concise but vivid
+        - Focus on one clear moment or sequence
+
+    - name: Lesson
+      description: The principle or insight extracted from the story
+      guidelines:
+        - State the lesson explicitly and clearly
+        - Connect story details to the broader principle
+        - Should feel earned - not tacked on
+        - Make it memorable and quotable
+        - Avoid clichés and generic wisdom
+        - Focus on one core lesson, not multiple
+
+    - name: Application
+      description: How readers can apply this lesson to their own situation
+      guidelines:
+        - Specific, actionable steps
+        - Address common scenarios readers face
+        - Include what to do AND what to avoid
+        - Make it immediately usable
+        - Consider different contexts (beginner vs advanced)
+        - End with clear next action
+
+validation:
+  min_sections: 3
+  max_sections: 3
+  min_chars: 500
+  max_chars: 1400
+  required_elements:
+    - All three sections must be present
+    - Story must be specific (not generic example)
+    - Lesson must be clearly stated
+    - Application must be actionable
+    - Clear flow from Story → Lesson → Application
+
+compatible_pillars:
+  - what_learning
+  - what_building
+  - sales_tech
+
+examples:
+  - title: "The $40K Mistake That Made Me a Better Engineer"
+    story: "Last year I deployed to production on a Friday at 4pm. 'It's a small change,' I told my team. By 5pm, our payment processor was down. Customers couldn't checkout. By Monday morning, we'd lost $40K in revenue. My CTO pulled me aside: 'It wasn't the bug. It was the timing and the process.'"
+    lesson: "The best engineers aren't the ones who never make mistakes - they're the ones who design systems where mistakes can't become disasters. It's not just about writing good code. It's about deployment discipline, monitoring, and blast radius containment."
+    application: "Before your next deploy: 1) Never ship on Fridays (give yourself recovery time). 2) Deploy to staging first, always. 3) Have a rollback plan before you ship. 4) Monitor critical metrics for 1 hour post-deploy. 5) Start with 5% traffic, not 100%. One habit change could save you from your own $40K lesson."
+
+  - title: "What 100 Failed Cold Calls Taught Me About Sales"
+    story: "First week as an SDR, I made 100 cold calls. Got 2 meetings. Felt like a failure. But my manager said: 'Play them back. Listen to what actually happened.' I did. On call 47, the prospect asked a question I couldn't answer, so I pivoted to features. Lost them. Happened 30+ times. I was running from 'I don't know.'"
+    lesson: "Admitting you don't know the answer builds more trust than faking expertise. Prospects can smell BS instantly. Saying 'I don't know, but I'll find out and get back to you today' turns a weakness into credibility. Sales isn't about knowing everything - it's about being honest and resourceful."
+    application: "Next time a prospect asks something you don't know: 1) Say 'Great question - I want to give you the accurate answer, not guess.' 2) Tell them when you'll follow up (be specific: 'by end of day'). 3) Actually follow up early. 4) Include the answer + why it matters to them. This works in demos, discovery, negotiation - anywhere honesty beats posturing."
+
+best_practices:
+  - Start with a hook - first sentence matters
+  - Story should have stakes (what was at risk?)
+  - Use dialogue when possible (makes it vivid)
+  - Lesson should feel like "aha moment" for reader
+  - Application needs numbered steps (makes it scannable)
+  - Balance specificity (story) with universality (lesson/application)
+  - Keep story brief - expand on application instead
+  - End with clear call to action
+
+anti_patterns:
+  - Generic "imagine this" stories (not your actual experience)
+  - Lesson that's obvious or cliché ("work hard", "never give up")
+  - Application that's too vague ("be more strategic")
+  - Story that doesn't connect to lesson
+  - Multiple lessons competing for attention
+  - Application without concrete steps
+  - Story that's too long - loses reader before lesson
+  - Preachy tone (share, don't lecture)
+
+voice_guidelines:
+  - First-person narrative for story section
+  - Conversational and engaging storytelling
+  - Clear and direct for lesson statement
+  - Practical and specific for application
+  - Balance humility (story) with authority (lesson)
+  - Maintain Austin's technical but accessible voice
+  - Use "you" in application section (direct address)

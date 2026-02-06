@@ -16,6 +16,8 @@ dependencies = [
     "uvicorn>=0.27.0",
     "jinja2>=3.1.0",
     "python-multipart>=0.0.21",
+    "pyyaml>=6.0.3",
+    "chevron>=0.14.0",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +56,7 @@ dev-dependencies = [
     "black>=23.12.0",
     "ruff>=0.1.8",
     "mypy>=1.7.0",
+    "types-pyyaml>=6.0.12.20250915",
 ]
 
 [tool.black]

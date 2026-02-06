@@ -67,7 +67,7 @@ def post_to_linkedin(content: str, access_token: str, user_sub: str, dry_run: bo
     logger.info("=" * 60)
     logger.info(f"Content: {content}")
     logger.info(f"Length: {len(content)} / 3000 chars")
-    logger.info(f"Visibility: PUBLIC")
+    logger.info("Visibility: PUBLIC")
     logger.info(f"Author URN: urn:li:person:{user_sub}")
 
     if dry_run:
@@ -104,7 +104,7 @@ def post_to_linkedin(content: str, access_token: str, user_sub: str, dry_run: bo
             )
 
         post_id = response.headers.get("X-RestLi-Id", "unknown")
-        logger.info(f"✅ Posted successfully!")
+        logger.info("✅ Posted successfully!")
         logger.info(f"Post ID: {post_id}")
         logger.info("\nView at: https://www.linkedin.com/feed/")
 

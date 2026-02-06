@@ -12,7 +12,7 @@ def migrate():
     db = get_db()
 
     # Find all posts that don't have a user_id (existing posts from testing)
-    existing_posts = db.query(Post).filter(Post.user_id == None).all()
+    existing_posts = db.query(Post).filter(Post.user_id is None).all()
 
     print(f"Found {len(existing_posts)} existing posts to migrate")
 

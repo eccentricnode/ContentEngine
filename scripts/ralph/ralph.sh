@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-MAX_ITERATIONS=${1:-20}
+MAX_ITERATIONS=${1:-25}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-echo "🚀 Starting Ralph on Content Engine"
+echo "🚀 Starting Ralph on Content Engine - Phase 3 Semantic Blueprints"
 echo "📁 Project: $PROJECT_ROOT"
 echo "🔄 Max iterations: $MAX_ITERATIONS"
 
@@ -23,7 +23,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
     echo ""
-    echo "✅ All stories complete!"
+    echo "✅ All stories complete! Phase 3 Semantic Blueprints implemented!"
     exit 0
   fi
 

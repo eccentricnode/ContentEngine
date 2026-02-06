@@ -2,7 +2,7 @@
 
 import os
 import requests
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from lib.errors import AIError
 
 

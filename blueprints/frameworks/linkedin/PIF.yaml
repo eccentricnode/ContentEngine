@@ -1,0 +1,120 @@
+name: PIF
+platform: linkedin
+description: Poll and Interactive Format - Engagement-driven content for audience participation
+type: framework
+
+structure:
+  sections:
+    - name: Hook
+      description: Opening that grabs attention and frames the question
+      guidelines:
+        - Start with surprising stat, bold claim, or provocative question
+        - Make it relevant to target audience's pain points
+        - Create curiosity gap - make them want to know more
+        - Keep it short (1-2 sentences max)
+        - Set up the interactive element naturally
+
+    - name: Interactive_Element
+      description: The poll, question, or call for responses
+      guidelines:
+        - Use LinkedIn poll feature when applicable
+        - Ask specific, not vague questions
+        - Provide 2-4 clear answer options (for polls)
+        - For open questions, give examples to seed responses
+        - Make it safe to participate (no "wrong" answers)
+        - Frame it as contribution, not test
+
+    - name: Context
+      description: Background or insight that adds value beyond the question
+      guidelines:
+        - Share why this question matters
+        - Provide your perspective (without preaching)
+        - Include data or observations that inform the topic
+        - Keep it conversational, not preachy
+        - Add value even for non-participants
+        - Connect to broader trend or insight
+
+    - name: Call_to_Action
+      description: Explicit invitation to engage
+      guidelines:
+        - Be direct about what you want (vote, comment, share perspective)
+        - Lower the barrier - make it easy
+        - Optional: Ask for specific details ("Share your number", "Tag someone who...")
+        - Create FOMO or reciprocity ("I'll share results tomorrow")
+        - Thank people in advance for participating
+
+validation:
+  min_sections: 4
+  max_sections: 4
+  min_chars: 300
+  max_chars: 1000
+  required_elements:
+    - All four sections must be present
+    - Interactive element must be clear and specific
+    - Context must add value (not just filler)
+    - CTA must explicitly ask for engagement
+    - Tone should be inviting, not demanding
+
+compatible_pillars:
+  - what_building
+  - what_learning
+  - sales_tech
+  - problem_solution
+
+examples:
+  - title: "What's Your Close Rate? (Poll)"
+    hook: "Most sales reps won't admit their real close rate. Let's change that."
+    interactive_element: "Poll: What's your current close rate? A) 0-10% B) 11-25% C) 26-40% D) 41%+"
+    context: "I was at 5% for 2 years before building an AI coaching system that got me to 40%. But I only got there by being honest about where I started. The hardest part isn't improving - it's admitting you need to. When you track the real number (not the hopeful one), you can actually fix it."
+    call_to_action: "Vote above + drop a comment if you're willing: What changed your close rate the most? I'll compile the best tactics and share them Monday."
+
+  - title: "AI Agents: Hype or Reality?"
+    hook: "Everyone's building AI agents. But 90% are just chatbots with extra steps."
+    interactive_element: "Here's my question: What's the first REAL task you'd want an AI agent to handle autonomously? Not 'help me brainstorm' - a task it completes end-to-end while you sleep."
+    context: "I'm building an autonomous LinkedIn content engine. It reads my session history, extracts themes, generates posts, and validates them against my brand voice. No human in the loop except final approval. That's the bar - truly autonomous. Most 'agents' still need hand-holding at every step. Let's raise the standard."
+    call_to_action: "Drop your answer in comments. Bonus points for specifics (data sources, success criteria, how you'd measure it). Best ideas get built into my next project."
+
+  - title: "Biggest Time-Waster in Your Week?"
+    hook: "I tracked my time for 30 days. Meetings weren't the problem. Slack was."
+    interactive_element: "Question: What's the #1 time-waster you'd eliminate if you could? (Your honest answer - we're all struggling with something.)"
+    context: "My data: 47% of my week was 'communication' - but most was async back-and-forth that could've been a 5-minute call. Eliminating unnecessary Slack threads saved me 12 hours/week. Now I batch check it 3x daily. Controversial? Maybe. Effective? Absolutely. The key is knowing YOUR specific drain, not following generic productivity advice."
+    call_to_action: "Comment with your biggest time-waster. I'll read every response and share the top 5 patterns I see + specific fixes for each."
+
+best_practices:
+  - Make the question genuinely interesting to you
+  - Share your own answer/perspective in context
+  - Promise value in return (results, compilation, insights)
+  - Respond to comments to keep engagement going
+  - Follow through on promised compilations/summaries
+  - Use polls for quantitative, open questions for qualitative
+  - Lower friction - make it easy to participate
+  - Create psychological safety (no judgment)
+
+anti_patterns:
+  - Vague questions ("What do you think about X?")
+  - No context (just a question with no value-add)
+  - Fishing for engagement without giving value
+  - Not responding to comments (defeats the purpose)
+  - Preachy setup that discourages honest answers
+  - Too many questions in one post (pick one)
+  - Forgetting to actually follow up with results
+  - Making people feel tested rather than consulted
+
+voice_guidelines:
+  - Direct and conversational
+  - Make it feel like you genuinely want to know
+  - Share your perspective without preaching
+  - Create reciprocity (you share, they share)
+  - Be specific in what you're asking
+  - Maintain Austin's technical credibility
+  - Inviting tone, not demanding
+  - Follow through builds trust for future engagement
+
+engagement_tactics:
+  - Respond to first 10 comments quickly (signals you're active)
+  - Ask follow-up questions in replies
+  - Share results/compilation in follow-up post (reference original)
+  - Tag thoughtful contributors when sharing results
+  - Use engagement as research for future content
+  - Thank participants publicly
+  - Time posts for when audience is most active

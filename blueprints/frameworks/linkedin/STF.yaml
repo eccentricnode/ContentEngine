@@ -1,0 +1,93 @@
+name: STF
+platform: linkedin
+description: Storytelling Framework - Problem, Tried, Worked, Lesson structure for authentic narrative content
+type: framework
+
+structure:
+  sections:
+    - name: Problem
+      description: Identify the specific problem or challenge faced
+      guidelines:
+        - Be concrete and specific, not generic
+        - Make it relatable to your audience
+        - Focus on business/technical problems your audience faces
+        - Use real examples from your experience
+
+    - name: Tried
+      description: What you attempted that didn't work
+      guidelines:
+        - Show vulnerability - what failed?
+        - Multiple attempts build credibility
+        - Explain why the obvious solution didn't work
+        - Connect to common misconceptions
+
+    - name: Worked
+      description: The solution that actually solved the problem
+      guidelines:
+        - Specific tactics and approach
+        - Why this was different from what you tried
+        - Include concrete metrics or results if available
+        - Technical details are good, keep them accessible
+
+    - name: Lesson
+      description: The takeaway and what you learned
+      guidelines:
+        - Actionable insight, not platitude
+        - Connect to broader principle
+        - What would you do differently next time?
+        - Make it applicable to reader's situation
+
+validation:
+  min_sections: 4
+  max_sections: 4
+  min_chars: 600
+  max_chars: 1500
+  required_elements:
+    - All four sections must be present
+    - Clear transition between sections
+    - Specific examples (no generic advice)
+    - First-person narrative voice
+
+compatible_pillars:
+  - what_building
+  - what_learning
+  - problem_solution
+
+examples:
+  - title: "From 5% to 40% Close Rate Using AI"
+    problem: "I was closing 5% of my sales calls. Terrible numbers. I knew product, had the pitch down, but something was off."
+    tried: "Tried all the classics: objection handling scripts, Sandler method, SPIN selling. Read the books. Watched the videos. Still stuck at 5-7%."
+    worked: "Built a custom AI system that analyzed my calls, identified patterns in successful vs failed closes, and gave me real-time coaching. Close rate jumped to 40% in 3 months."
+    lesson: "Generic sales training teaches techniques. But YOUR specific gaps need YOUR specific solutions. AI can find patterns you can't see in your own performance."
+
+  - title: "Why My First SaaS Failed (And What I'd Do Different)"
+    problem: "Spent 6 months building a project management tool. Launch day: 3 signups. All friends. Zero revenue."
+    tried: "Built more features. Better UI. More integrations. Surely the product just needed to be BETTER. Spent another 4 months. Still crickets."
+    worked: "Talked to 50 potential users. Realized they didn't need another PM tool - they needed a way to stop context-switching between Slack/Asana/Email. Pivoted to a unified inbox. Got 100 signups in 2 weeks."
+    lesson: "You can't code your way out of a problem-market fit issue. Talk to users BEFORE you build, not after you launch."
+
+best_practices:
+  - Start with a hook (the problem or the surprising result)
+  - Use line breaks to separate sections visually
+  - Keep paragraphs short (2-3 sentences max)
+  - Use specific numbers when possible (5% → 40%, not 'improved')
+  - Avoid corporate jargon and buzzwords
+  - Write like you're explaining to a smart friend
+  - End with actionable takeaway, not motivational fluff
+
+anti_patterns:
+  - Generic advice that could apply to anyone
+  - Vague language ("increased efficiency", "optimized workflow")
+  - Missing the "Tried" section (makes it seem too easy)
+  - Lesson that's just a restatement of the problem
+  - Humble-bragging without vulnerability
+  - Too long (LinkedIn users scroll fast)
+  - No line breaks (wall of text kills engagement)
+
+voice_guidelines:
+  - First-person narrative ("I", "my", "we")
+  - Conversational but professional
+  - Technical depth where relevant, but accessible
+  - Confident without being arrogant
+  - Authentic - show the struggle, not just the win
+  - Specific > Generic always

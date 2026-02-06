@@ -1,117 +1,227 @@
-# Ralph Agent Instructions - Content Engine Phase 2
+# Ralph Agent Instructions - Content Engine Phase 3
 
 ## Your Task
 
-1. Read `scripts/ralph/prd.json`
-2. Read `scripts/ralph/progress.txt`
-3. Read `AGENTS.md` for build/test commands
-4. Check you're on the correct branch
+You are implementing **Phase 3: Semantic Blueprints** for Content Engine, a Python-based autonomous content generation system.
+
+**Goal:** Build a blueprint system that encodes content frameworks (STF, MRS, SLA, PIF), workflows (Sunday Power Hour), and brand constraints as YAML files, with validation and content generation capabilities.
+
+## Workflow
+
+1. Read `scripts/ralph/prd.json` - See all user stories
+2. Read `scripts/ralph/progress.txt` - Check patterns and learnings
+3. Read `AGENTS.md` - Build/test commands
+4. Check you're on the correct branch (from prd.json branchName)
 5. Pick highest priority story where `passes: false`
-6. Implement that ONE story completely
-7. Run: `uv run pytest` (must pass)
-8. Commit: `feat(story-id): Brief description`
-9. Update prd.json: `passes: true`
-10. Append learnings to progress.txt
+6. Implement that ONE story completely (don't skip ahead)
+7. Run quality checks (mypy, ruff, pytest - ALL must pass)
+8. Commit with message: `feat(story-id): Brief description`
+9. Update prd.json: set `passes: true` for completed story
+10. Append learnings to progress.txt (patterns discovered, gotchas, best practices)
+11. Loop continues automatically
 
 ## Tech Stack
 
-- Python 3.11+ with uv package manager
-- FastAPI (web framework)
-- SQLite + aiosqlite (database)
-- pytest (testing)
-- Ollama (local LLM inference)
-- python-dotenv (environment variables)
+- **Language:** Python 3.11+
+- **Package Manager:** uv (NOT pip) - Use `uv add` to install dependencies
+- **Testing:** pytest
+- **Type Checking:** mypy
+- **Linting:** ruff
+- **Database:** SQLAlchemy ORM (SQLite for MVP)
+- **YAML:** PyYAML for blueprint parsing
+- **Templates:** pybars3 or chevron for Handlebars rendering
 
-## Quality Gates
+## Quality Gates (ALL must pass before commit)
 
-Before marking story complete:
+```bash
+# 1. Type check
+uv run mypy lib/ agents/
 
-1. **Tests pass:**
-   ```bash
-   uv run pytest
-   ```
+# 2. Linting  
+uv run ruff check .
 
-2. **Code imports without errors:**
-   ```bash
-   uv run python -c "from lib import context_capture"
-   ```
+# 3. Tests
+uv run pytest
+```
 
-3. **Type checking (if applicable):**
-   ```bash
-   uv run mypy lib/
-   ```
+**If any fail:** Fix them before committing. Never commit broken code.
+
+## New Dependencies
+
+When you need to add dependencies:
+
+```bash
+# Add to project
+uv add pybars3  # or chevron, whichever you choose for Handlebars
+
+uv add PyYAML   # if not already present
+
+# Sync environment
+uv sync
+```
+
+## Architecture Context
+
+**Existing Phase 2 (Context Capture) integration:**
+- `lib/context_synthesizer.py` - Extracts themes/decisions/progress from session history
+- Use `synthesize_daily_context()` to get DailyContext for blueprint prompts
+
+**New Phase 3 components you're building:**
+- `blueprints/` - YAML files defining frameworks, workflows, constraints
+- `lib/blueprint_loader.py` - Load and cache blueprints
+- `lib/blueprint_engine.py` - Validation and workflow execution
+- `lib/template_renderer.py` - Handlebars template rendering
+- `agents/linkedin/content_generator.py` - Generate posts using blueprints
+- `agents/linkedin/post_validator.py` - Validate posts against constraints
+
+## Blueprint YAML Structure Examples
+
+**Framework (STF.yaml):**
+```yaml
+name: STF
+platform: linkedin
+description: Storytelling Framework
+structure:
+  sections:
+    - Problem
+    - Tried
+    - Worked
+    - Lesson
+validation:
+  min_sections: 4
+  min_chars: 600
+  max_chars: 1500
+compatible_pillars:
+  - what_building
+  - what_learning
+  - problem_solution
+```
+
+**Constraint (BrandVoice.yaml):**
+```yaml
+name: BrandVoice
+type: constraint
+characteristics:
+  - technical_but_accessible
+  - authentic
+  - confident
+forbidden_phrases:
+  - "leverage synergy"
+  - "disrupt the market"
+  - "hustle culture"
+validation_rules:
+  specificity: high
+  actionability: required
+```
 
 ## Progress Format
 
-Append to `scripts/ralph/progress.txt`:
+After completing each story, APPEND to `scripts/ralph/progress.txt`:
 
 ```
-## [Date] - [Story ID]
-- Implemented: [brief description]
-- Files: [list of files]
-- Tests: pytest ✓
+## [YYYY-MM-DD] - [Story ID] - [Story Title]
+
+**Implemented:**
+- Brief description of what was built
+
+**Files changed:**
+- path/to/file1.py
+- path/to/file2.py
+
+**Learnings:**
+- Pattern discovered (add to Codebase Patterns section)
+- Gotcha encountered
+- Best practice identified
+
+**Tests:**
+- mypy: PASS
+- ruff: PASS
+- pytest: PASS
+
+**Commit:** <commit hash>
+
 ---
 ```
 
-## Codebase Patterns
-
-**File Paths:**
-- Session history: `~/.claude/History/Sessions/`
-- Project notes: `~/Documents/Folio/1-Projects/`
-- Use pathlib.Path for all file operations
-- Always handle FileNotFoundError
-
-**Context Capture:**
-- Parse session JSONs with proper error handling
-- Extract meaningful insights, not raw dumps
-- Structure as clean JSON/YAML
-- Store in `context/` directory
-
-**Ollama Integration:**
-- Import: `from ollama import chat`
-- Model: `llama3:8b`
-- Call: `chat(model='llama3:8b', messages=[{'role': 'user', 'content': prompt}])`
-- Return: `response['message']['content']`
-- Always handle connection errors gracefully
-
-**Database:**
-- Use aiosqlite for async operations
-- Create tables on startup
-- Always use `async with` for connections
-
 ## Stop Condition
 
-If all stories in prd.json have `passes: true`:
+When ALL stories in prd.json have `passes: true`:
 
 ```xml
 <promise>COMPLETE</promise>
 ```
 
+Otherwise, continue to next iteration.
+
 ## Important Notes
 
-- Use `uv run` for all Python commands
-- Mock external services in tests (Ollama, file system when possible)
-- Test both success and failure paths
-- Include docstrings with type hints
-- Follow existing code style (black, ruff)
+- **Follow existing patterns:** Check how `lib/database.py`, `lib/context_synthesizer.py` are structured
+- **Type hints everywhere:** mypy strict mode
+- **Mock external dependencies:** Don't call real APIs in tests
+- **Read the plan:** The master plan is in this prompt's context - follow the architecture described there
+- **One story at a time:** Don't try to implement multiple stories at once
+- **Ask questions in commits:** If design decision needed, make reasonable choice and document in commit message
 
 ## Error Handling
 
-If tests fail:
-1. Read the error message carefully
+If quality checks fail:
+1. Read error message carefully
 2. Fix the issue
-3. Re-run `uv run pytest`
-4. Only commit when tests pass
+3. Re-run ALL quality checks
+4. Only commit when everything passes
 
-Do NOT mark story complete if tests fail.
+Do NOT mark story as complete if tests/typing/linting fail.
 
-## Context Capture Guidelines
+## Integration Points
 
-Phase 2 is about building a context layer that:
-1. Reads PAI session history (JSON files)
-2. Reads project notes from Folio
-3. Extracts meaningful insights
-4. Structures cleanly for agent consumption
-5. Stores for semantic blueprint agents to read
+**With Phase 2 (Context Capture):**
+- Import `synthesize_daily_context()` from `lib/context_synthesizer.py`
+- Use DailyContext (themes, decisions, progress) as input to blueprint prompts
 
-**Key principle:** Context should be structured, not raw dumps. Quality over quantity.
+**With CLI:**
+- Add commands to `cli.py` following existing patterns (Click groups/commands)
+- Test CLI commands work: `uv run content-engine <command>`
+
+**With Database:**
+- Add new models to `lib/database.py` (Blueprint, ContentPlan tables)
+- Create migrations if needed: `alembic revision --autogenerate -m "message"`
+- Run migrations: `alembic upgrade head`
+
+## Testing Strategy
+
+**Unit tests:**
+- Test blueprint loading/parsing
+- Test validation logic
+- Test template rendering
+- Mock file system, LLM calls, database
+
+**Integration tests:**
+- Test end-to-end content generation
+- Test workflow execution
+- Use real YAML files but mocked LLM
+
+## Current Codebase Patterns (from AGENTS.md)
+
+**Package Manager:**
+- Always use `uv run` prefix
+- Install: `uv add package-name`
+- Sync: `uv sync`
+
+**File Paths:**
+- Use `pathlib.Path` and `os.path.expanduser()`
+- Session history: `~/.claude/History/Sessions/`
+- Project notes: `~/Documents/Folio/1-Projects/`
+
+**Database:**
+- Use aiosqlite for async operations
+- Models in `lib/database.py`
+- Use context managers for sessions
+
+**Testing:**
+- pytest fixtures for test data
+- Mock external dependencies
+- Test success and failure paths
+
+---
+
+**Start with the highest priority story in prd.json and build one story at a time. Good luck, Ralph! 🚀**

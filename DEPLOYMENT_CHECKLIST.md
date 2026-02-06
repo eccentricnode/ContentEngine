@@ -308,6 +308,98 @@ crontab -l
 
 ---
 
+### Step 7: Set Up Systemd Timers (Recommended)
+
+ContentEngine includes systemd service and timer files for automated tasks. Systemd timers are more reliable than cron jobs and provide better logging.
+
+#### Context Capture Timer (Already Set Up)
+
+Runs daily at 11:59 PM to capture context from session history.
+
+```bash
+ssh ajohn@192.168.0.5
+
+# Copy service and timer files to systemd directory
+sudo cp ~/ContentEngine/systemd/content-engine-capture.service /etc/systemd/system/
+sudo cp ~/ContentEngine/systemd/content-engine-capture.timer /etc/systemd/system/
+
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable and start the timer
+sudo systemctl enable content-engine-capture.timer
+sudo systemctl start content-engine-capture.timer
+
+# Check timer status
+sudo systemctl status content-engine-capture.timer
+sudo systemctl list-timers --all | grep content-engine
+```
+
+#### LinkedIn Analytics Timer (New)
+
+Runs daily at 10:00 AM to collect post analytics.
+
+**Prerequisites:**
+- `LINKEDIN_ACCESS_TOKEN` must be set (either in environment or database)
+- `data/posts.jsonl` file must exist
+
+```bash
+ssh ajohn@192.168.0.5
+
+# Copy service and timer files to systemd directory
+sudo cp ~/ContentEngine/systemd/linkedin-analytics.service /etc/systemd/system/
+sudo cp ~/ContentEngine/systemd/linkedin-analytics.timer /etc/systemd/system/
+
+# Edit service file to set LINKEDIN_ACCESS_TOKEN
+sudo nano /etc/systemd/system/linkedin-analytics.service
+# Update: Environment="LINKEDIN_ACCESS_TOKEN=your_actual_token"
+
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable and start the timer
+sudo systemctl enable linkedin-analytics.timer
+sudo systemctl start linkedin-analytics.timer
+
+# Check timer status
+sudo systemctl status linkedin-analytics.timer
+sudo systemctl list-timers --all | grep linkedin-analytics
+
+# Test service manually (optional)
+sudo systemctl start linkedin-analytics.service
+
+# View logs
+journalctl -u linkedin-analytics.service
+# OR
+cat ~/ContentEngine/analytics.log
+```
+
+**Alternative: Use Database Token (Recommended)**
+
+If your `LINKEDIN_ACCESS_TOKEN` is stored in the database, you can remove the environment variable from the service file:
+
+```bash
+# Edit service file
+sudo nano /etc/systemd/system/linkedin-analytics.service
+
+# Remove or comment out the Environment line:
+# Environment="LINKEDIN_ACCESS_TOKEN=your_token_here"
+
+# The collect-analytics command will automatically load the token from database
+```
+
+**Verify Timer Schedule:**
+
+```bash
+# Show when the timer will run next
+systemctl list-timers linkedin-analytics.timer
+
+# Show timer logs
+journalctl -u linkedin-analytics.timer
+```
+
+---
+
 ## Testing Checklist
 
 After deployment, verify these work:
@@ -335,6 +427,20 @@ After deployment, verify these work:
 - [ ] **Background Worker**
   ```bash
   ssh ajohn@192.168.0.5 "cd ~/ContentEngine && uv run content-worker"
+  ```
+
+- [ ] **LinkedIn Analytics Collection**
+  ```bash
+  ssh ajohn@192.168.0.5 "cd ~/ContentEngine && uv run content-engine collect-analytics --test-post urn:li:share:7412668096475369472"
+  ```
+
+- [ ] **Systemd Timers**
+  ```bash
+  # Check analytics timer
+  ssh ajohn@192.168.0.5 "systemctl list-timers --all | grep linkedin-analytics"
+
+  # Check context capture timer
+  ssh ajohn@192.168.0.5 "systemctl list-timers --all | grep content-engine-capture"
   ```
 
 ---

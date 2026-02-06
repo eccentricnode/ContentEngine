@@ -5,7 +5,7 @@ from typing import Optional
 import secrets
 import requests
 
-from fastapi import FastAPI, Request, Query, Response
+from fastapi import FastAPI, Request, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -188,7 +188,7 @@ async def dashboard(request: Request):
         base_query = select(Post).where(Post.user_id == user.id)
     else:
         # Demo mode: Show only demo posts
-        base_query = select(Post).where(Post.is_demo == True)
+        base_query = select(Post).where(Post.is_demo)
 
     # Get counts by status
     total_posts = db.execute(select(func.count(Post.id)).select_from(base_query.subquery())).scalar()
@@ -242,7 +242,7 @@ async def posts_list(
     if user:
         query = select(Post).where(Post.user_id == user.id)
     else:
-        query = select(Post).where(Post.is_demo == True)
+        query = select(Post).where(Post.is_demo)
 
     query = query.order_by(Post.created_at.desc())
 
@@ -316,7 +316,7 @@ async def api_posts(
     if user:
         query = select(Post).where(Post.user_id == user.id)
     else:
-        query = select(Post).where(Post.is_demo == True)
+        query = select(Post).where(Post.is_demo)
 
     query = query.order_by(Post.created_at.desc())
 
@@ -342,7 +342,7 @@ async def api_stats(request: Request):
     if user:
         base_query = select(Post).where(Post.user_id == user.id)
     else:
-        base_query = select(Post).where(Post.is_demo == True)
+        base_query = select(Post).where(Post.is_demo)
 
     # Get counts
     total_posts = db.execute(select(func.count(Post.id)).select_from(base_query.subquery())).scalar()
