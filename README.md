@@ -1,397 +1,85 @@
 # Content Engine
 
-Autonomous AI-powered content generation and posting system with semantic blueprints and self-improvement loops.
+Autonomous content pipeline that captures what I'm working on, generates posts across platforms, and learns from what actually performs.
 
-## Overview
+I built this because I was spending 20 minutes per LinkedIn post doing the same thing every time — pulling context from session notes, structuring it against my voice, posting, then never looking at what worked. That's a system, not a creative act. So I automated the system and kept the creative part.
 
-Content Engine is a multi-phase AI system that:
-- Captures daily context from session history and project notes
-- Uses semantic blueprints to guide agent decision-making
-- Generates and posts content across multiple platforms (LinkedIn, Twitter, blog)
-- Learns from engagement data and self-improves
+## What it does
 
-**Current Status:** Phase 3 Complete - Semantic Blueprints (26/26 stories)
+- **Captures daily context** from my Claude Code session history and project notes — what I shipped, what I learned, what failed
+- **Generates content** using semantic blueprints that encode my voice, brand constraints, and platform rules
+- **Posts to LinkedIn** via OAuth with draft review, scheduling, and approval gates — nothing goes out without my sign-off
+- **Tracks engagement** and feeds performance data back into the pipeline so the system learns what lands
+
+**Current status:** Phase 3 complete (26/26 stories). Semantic blueprints, multi-agent validation, and content generation all working. Feedback loops (Phase 6) are next.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Content Engine                         │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  Phase 1: Basic Posting (CURRENT)                       │
-│  ├─ LinkedIn OAuth & Posting                            │
-│  ├─ Error handling & logging                            │
-│  └─ Server deployment                                   │
-│                                                          │
-│  Phase 2: Context Capture                               │
-│  ├─ Session history aggregation                         │
-│  ├─ Project notes synthesis                             │
-│  └─ Structured context storage                          │
-│                                                          │
-│  Phase 3: Semantic Blueprints                           │
-│  ├─ Brand Planner blueprint                             │
-│  ├─ LinkedIn Agent blueprint                            │
-│  └─ Constraint-based decision logic                     │
-│                                                          │
-│  Phase 4-7: Autonomous agents + feedback loops          │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+Context Capture  →  Blueprint Engine  →  Multi-Agent Pipeline  →  Platform Posting
+(sessions, notes)   (STF, MRS, SLA, PIF)  (generate → validate → refine)  (LinkedIn, drafts, scheduling)
+                                                    ↑                              │
+                                                    └──── engagement feedback ─────┘
 ```
 
-## Technical Stack
+The pipeline uses a **Generator → Validator → Refiner** pattern. Llama drafts, Claude validates against brand constraints, refinement happens in-loop. Blueprints aren't prompts — they're structured decision frameworks that encode what makes a post *mine* vs. generic AI slop.
 
-- **Language:** Python 3.11+
-- **Package Manager:** uv (fast, modern Python tooling)
-- **AI Integration:**
-  - **Local:** Ollama (llama3:8b) - Free development/testing
-  - **Production:** AWS Bedrock (Claude Haiku, Llama 3.3 70B) - ~$0.004/post
-  - **See:** `~/Documents/Folio/1-Projects/ContentEngine/` for setup guide
-- **Database:** SQLite (development) → PostgreSQL (production)
-- **Deployment:** Self-hosted on local server (192.168.0.5)
-- **Testing:** pytest (403 tests passing)
-- **Code Quality:** black, ruff, mypy
+## Tech stack
 
-## Setup
+- **Python 3.11+** with **uv** for package management
+- **AI:** Ollama locally (llama3:8b, free) → AWS Bedrock in production (Claude Haiku + Llama 3.3 70B, ~$0.004/post)
+- **Database:** SQLite dev → PostgreSQL production, Alembic migrations
+- **Testing:** 403 tests passing, ruff compliant, mypy typed
+- **Deployment:** Self-hosted, `./scripts/deploy.sh`
 
-### Prerequisites
-
-- Python 3.11+
-- [uv](https://github.com/astral-sh/uv) package manager
-- LinkedIn Developer account (for API access)
-
-### Installation
+## Quick start
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd ContentEngine
-
-# Install dependencies with uv
+git clone <repo-url> && cd ContentEngine
 uv sync
-
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your credentials
-nano .env
-```
-
-### LinkedIn OAuth Setup
-
-1. Go to [LinkedIn Developers](https://www.linkedin.com/developers/)
-2. Create a new app
-3. Enable "Share on LinkedIn" and "OpenID Connect" products
-4. Set redirect URI to `http://localhost:3000/callback`
-5. Copy Client ID and Client Secret to `.env`
-6. Run OAuth flow:
-
-```bash
-uv run linkedin-oauth
-```
-
-7. Open browser to `http://localhost:3000`
-8. Authorize the app
-9. Save the access token to `.env`
-
-### First-Time Setup
-
-After OAuth flow, migrate your token to the database:
-
-```bash
-uv run python scripts/migrate_oauth.py
-```
-
-### Database Setup
-
-ContentEngine uses Alembic for database migrations.
-
-**Initialize database:**
-
-```bash
-# First time only - create database with latest schema
+cp .env.example .env   # add LinkedIn credentials
 uv run alembic upgrade head
-```
-
-**Check migration status:**
-
-```bash
-uv run alembic current
-```
-
-See [DATABASE.md](DATABASE.md) for detailed migration guide.
-
-### Usage
-
-**Context Capture (Phase 2):**
-
-```bash
-# Capture daily context from sessions and projects
 uv run content-engine capture-context
+uv run content-engine generate --pillar what_building --framework STF
+```
 
-# Capture context for specific date
+## Key commands
+
+```bash
+# Context capture
+uv run content-engine capture-context              # today's context from sessions + notes
 uv run content-engine capture-context --date 2026-01-12
 
-# Custom directories
-uv run content-engine capture-context \
-  --sessions-dir ~/.claude/History/Sessions/ \
-  --projects-dir ~/Documents/Folio/1-Projects/ \
-  --output-dir context/
-
-# View captured context
-cat context/2026-01-12.json
-```
-
-Context capture automatically:
-1. Reads PAI session history (JSON/JSONL files)
-2. Reads project notes from Folio (Markdown with frontmatter)
-3. Synthesizes with local LLM (Ollama llama3:8b)
-4. Extracts themes, decisions, and progress
-5. Saves structured JSON to `context/YYYY-MM-DD.json`
-
-**Prerequisites for context capture:**
-- Ollama installed and running (`ollama serve`)
-- llama3:8b model pulled (`ollama pull llama3:8b`)
-- Session history at `~/.claude/History/Sessions/` (optional)
-- Project notes at `~/Documents/Folio/1-Projects/` (optional)
-
-**LinkedIn Analytics Collection:**
-
-```bash
-# Collect analytics for all recent posts (last 7 days)
-uv run content-engine collect-analytics
-
-# Collect analytics for posts from last 14 days
-uv run content-engine collect-analytics --days-back 14
-
-# Test analytics for a single post
-uv run content-engine collect-analytics --test-post urn:li:share:7412668096475369472
-```
-
-Analytics collection automatically:
-1. Loads LinkedIn access token from environment (`LINKEDIN_ACCESS_TOKEN`) or database
-2. Fetches post metrics (impressions, likes, comments, shares, clicks, engagement rate)
-3. Updates `data/posts.jsonl` with fresh analytics
-4. Skips posts that already have metrics
-
-**Prerequisites for analytics collection:**
-- LinkedIn access token with analytics permissions
-- Set `LINKEDIN_ACCESS_TOKEN` environment variable OR store token in database
-- `data/posts.jsonl` file (create with `mkdir -p data && touch data/posts.jsonl`)
-
-**posts.jsonl Schema:**
-
-Each line in `data/posts.jsonl` is a JSON object representing a single LinkedIn post:
-
-```json
-{
-  "post_id": "urn:li:share:7412668096475369472",
-  "posted_at": "2026-01-01T00:00:00",
-  "blueprint_version": "manual_v1",
-  "content": "Your post content here",
-  "metrics": {
-    "post_id": "urn:li:share:7412668096475369472",
-    "impressions": 1234,
-    "likes": 45,
-    "comments": 3,
-    "shares": 2,
-    "clicks": 67,
-    "engagement_rate": 0.0405,
-    "fetched_at": "2026-01-17T10:30:00"
-  }
-}
-```
-
-**Fields:**
-- `post_id` (string): LinkedIn share URN (e.g., "urn:li:share:7412668096475369472")
-- `posted_at` (string): ISO 8601 timestamp when post was published
-- `blueprint_version` (string): Content framework version used (e.g., "manual_v1", "STF_v1")
-- `content` (string): Full text content of the post
-- `metrics` (object, optional): Analytics data (populated after running collect-analytics)
-  - `post_id` (string): Same as parent post_id
-  - `impressions` (int): Number of times post was shown
-  - `likes` (int): Number of likes/reactions
-  - `comments` (int): Number of comments
-  - `shares` (int): Number of shares/reposts
-  - `clicks` (int): Number of clicks on post links
-  - `engagement_rate` (float): Calculated as (likes + comments + shares) / impressions
-  - `fetched_at` (string): ISO 8601 timestamp when metrics were fetched
-
-**Example: Adding a post manually**
-
-```bash
-# Add a new post to posts.jsonl (without metrics initially)
-echo '{"post_id": "urn:li:share:7412668096475369472", "posted_at": "2026-01-01T00:00:00", "blueprint_version": "manual_v1", "content": "New Year 2026 post"}' >> data/posts.jsonl
-
-# Fetch analytics for the post
-uv run content-engine collect-analytics --test-post urn:li:share:7412668096475369472
-
-# Or fetch analytics for all recent posts
-uv run content-engine collect-analytics
-```
-
-**Analytics Dashboard:**
-
-View analytics summary and identify best/worst performing posts:
-
-```bash
-# Display analytics dashboard in terminal
-python scripts/analytics_dashboard.py
-
-# Export analytics to CSV
-python scripts/analytics_dashboard.py --export-csv results.csv
-```
-
-Dashboard displays:
-- Summary table with post ID, date, engagement rate, likes, and comments
-- Average engagement rate across all posts
-- Best performing post (highest engagement)
-- Worst performing post (lowest engagement)
-- Works gracefully with missing metrics (prompts to run collect-analytics)
-
-CSV export includes all metrics (impressions, likes, comments, shares, clicks, engagement_rate, fetched_at) for further analysis in spreadsheet tools.
-
-**Phase 3: Semantic Blueprints (NEW)**
-
-```bash
-# List available blueprints
-uv run content-engine blueprints list
-
-# Show framework details
-uv run content-engine blueprints show STF
-
-# Generate content using blueprints
+# Content generation
+uv run content-engine blueprints list              # available frameworks
 uv run content-engine generate --pillar what_building --framework STF
+uv run content-engine sunday-power-hour            # batch workflow for the week
 
-# Run Sunday Power Hour batching workflow
-uv run content-engine sunday-power-hour
+# Post management
+uv run content-engine draft "Your content here"
+uv run content-engine approve 1                    # review then post
+uv run content-engine approve 1 --dry-run          # test without posting
 
-# Validate existing post
-uv run content-engine validate <post_id>
-```
-
-**Content Engine CLI:**
-
-```bash
-# Create a draft post
-uv run content-engine draft "Your post content here"
-
-# List all posts
-uv run content-engine list
-
-# List only drafts
-uv run content-engine list --status draft
-
-# Show full post details
-uv run content-engine show 1
-
-# Approve and post immediately
-uv run content-engine approve 1
-
-# Dry run (test without posting)
-uv run content-engine approve 1 --dry-run
-
-# Schedule for later
-uv run content-engine schedule 1 "2024-01-15 09:00"
-
-# Reject a draft
-uv run content-engine reject 1
-```
-
-**Background Worker (for scheduled posts):**
-
-```bash
-# Run once to process scheduled posts
-uv run content-worker
-
-# Set up cron job (runs every 15 minutes)
-crontab -e
-# Add: */15 * * * * cd /path/to/ContentEngine && uv run content-worker >> /tmp/content-worker.log 2>&1
-```
-
-**Direct LinkedIn API (for testing):**
-
-```bash
-# Test connection
-uv run python -m agents.linkedin.test_connection
-
-# Post directly (bypasses database)
-uv run python -m agents.linkedin.post "Your content here"
-```
-
-## Development
-
-```bash
-# Run tests
-uv run pytest
-
-# Type checking
-uv run mypy agents/
-
-# Code formatting
-uv run black .
-uv run ruff check .
-```
-
-## Deployment
-
-Deploy to server at `192.168.0.5`:
-
-```bash
-./scripts/deploy.sh
+# Analytics
+uv run content-engine collect-analytics
+python scripts/analytics_dashboard.py
 ```
 
 ## Roadmap
 
-- [x] Phase 1: LinkedIn OAuth & posting infrastructure
-- [x] Phase 1.5: Database, CLI, and scheduled posting
-- [x] Phase 2: Context capture from session history (COMPLETE)
-  - [x] Session history parser (CE-001)
-  - [x] Project notes aggregator (CE-002)
-  - [x] Context synthesizer with Ollama (CE-003)
-  - [x] Context storage and CLI (CE-004)
-- [x] Phase 3: Semantic Blueprints (COMPLETE - 26/26 stories)
-  - [x] Blueprint infrastructure (loader, engine, renderer)
-  - [x] Content frameworks (STF, MRS, SLA, PIF)
-  - [x] Brand constraints (BrandVoice, ContentPillars, PlatformRules)
-  - [x] Workflows (SundayPowerHour, Repurposing1to10)
-  - [x] Multi-agent validation & content generation
-  - [x] CLI commands (blueprints, generate, validate, sunday-power-hour)
+- [x] Phase 1: LinkedIn OAuth + posting infrastructure
+- [x] Phase 1.5: Database, CLI, scheduled posting
+- [x] Phase 2: Context capture from session history
+- [x] Phase 3: Semantic blueprints (26/26 stories)
 - [ ] Phase 4: Brand Planner agent
 - [ ] Phase 5: Autonomous content generation
 - [ ] Phase 6: Engagement feedback loops
-- [ ] Phase 7: Multi-platform support (Twitter, blog, YouTube)
+- [ ] Phase 7: Multi-platform (Twitter, blog, YouTube)
 
-## Interview Demo Points
+## Cost
 
-This project demonstrates:
-
-- **AI System Architecture:** Multi-agent system with semantic blueprints
-  - Generator → Validator → Refiner pattern
-  - Blueprint-driven content frameworks (STF, MRS, SLA, PIF)
-  - RAG-based fact-checking prevents hallucinations
-- **Production AI Integration:** AWS Bedrock deployment
-  - Cost optimization: $0.12/month for 30 posts (vs $50/post manual)
-  - Multi-model orchestration (Llama drafts, Claude validates)
-  - Setup guide: `~/Documents/Folio/1-Projects/ContentEngine/`
-- **OAuth Implementation:** Secure LinkedIn API integration
-- **Production Infrastructure:** Error handling, logging, deployment automation
-- **Self-Improving Systems:** Engagement feedback loops (Phase 6)
-- **Full Stack:** OAuth server, API integration, agent orchestration
-- **Testing:** 403 passing tests, 100% ruff compliant, typed (mypy)
-
-Built in Python for superior AI/ML library ecosystem (LangChain, LlamaIndex, Anthropic SDK).
-
-**Production Readiness:**
-- **Cost:** < $1/month on AWS Bedrock (vs $50/post manual creation)
-- **Speed:** 15 seconds per post (vs 20 minutes manual)
-- **Quality:** Multi-agent validation ensures brand voice & accuracy
-- **ROI:** 12,500x return ($18K/year value for $1.44/year cost)
+Running the full pipeline on AWS Bedrock: **< $1.50/year** for 30 posts/month. Local dev with Ollama is free.
 
 ## License
 
 MIT
-
-## Author
-
-Austin Johnson - AI Engineer
